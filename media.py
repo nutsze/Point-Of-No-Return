@@ -1,4 +1,4 @@
-"""Проверяемая локальная историческая медиатека."""
+"""Проверяемая локальная историческая медиатека и монохромные сцены."""
 from __future__ import annotations
 
 import json
@@ -9,7 +9,7 @@ from engine import resource_root
 
 REQUIRED_FIELDS = {
     "id", "filename", "title", "author", "source_url", "license",
-    "license_url", "modification_description",
+    "license_url", "modification_description", "scene_filename",
 }
 
 
@@ -23,7 +23,7 @@ class MediaLibrary:
         self.by_id: dict[str, dict[str, Any]] = {}
         self.errors: list[str] = []
         self._validate()
-        self._surface_cache: dict[tuple[str, int, int, str], Any] = {}
+        self._surface_cache: dict[tuple[str, int, int, str, bool], Any] = {}
 
     def _validate(self) -> None:
         for record in self.records:
@@ -39,11 +39,14 @@ class MediaLibrary:
                 raise ValueError(f"Не подтверждена лицензия: {photo_id}")
             if not record["source_url"].startswith("https://commons.wikimedia.org/"):
                 raise ValueError(f"Источник не относится к Wikimedia Commons: {photo_id}")
-            filename = Path(record["filename"])
-            if filename.is_absolute() or ".." in filename.parts:
-                raise ValueError(f"Небезопасный путь к фотографии: {photo_id}")
-            if not (self.root / filename).is_file():
-                self.errors.append(f"Файл отсутствует: {record['filename']}")
+            for field in ("filename", "scene_filename"):
+                if field not in record:
+                    continue
+                filename = Path(record[field])
+                if filename.is_absolute() or ".." in filename.parts:
+                    raise ValueError(f"Небезопасный путь к фотографии: {photo_id}")
+                if not (self.root / filename).is_file():
+                    self.errors.append(f"Файл отсутствует: {record[field]}")
             self.by_id[photo_id] = record
 
     def get(self, photo_id: str) -> dict[str, Any] | None:
@@ -55,20 +58,24 @@ class MediaLibrary:
             return "Документальное изображение отсутствует в проверенной медиатеке"
         return f"Фото: {record['author']} / Wikimedia Commons / {record['license']}"
 
-    def surface(self, photo_id: str, size: tuple[int, int], mode: str = "cover"):
+    def surface(self, photo_id: str, size: tuple[int, int], mode: str = "cover", scene: bool = False):
         """Возвращает масштабированную копию; исходный файл никогда не изменяется."""
         import pygame
 
         width, height = max(1, int(size[0])), max(1, int(size[1]))
-        key = (photo_id, width, height, mode)
+        key = (photo_id, width, height, mode, scene)
         if key in self._surface_cache:
             return self._surface_cache[key]
         record = self.get(photo_id)
         target = pygame.Surface((width, height)).convert()
-        target.fill((13, 19, 27))
+        target.fill(BLACK)
         if not record:
             return target
-        path = self.root / record["filename"]
+        filename = record.get("scene_filename") if scene else None
+        filename = filename or record["filename"]
+        path = self.root / filename
+        if not path.is_file():
+            path = self.root / record["filename"]
         if not path.is_file():
             return target
         try:
@@ -76,18 +83,21 @@ class MediaLibrary:
         except (pygame.error, OSError):
             return target
         sw, sh = source.get_size()
-        if mode == "contain":
-            scale = min(width / sw, height / sh)
-        else:
-            scale = max(width / sw, height / sh)
+        scale = min(width / sw, height / sh) if mode == "contain" else max(width / sw, height / sh)
         scaled_size = (max(1, round(sw * scale)), max(1, round(sh * scale)))
         scaled = pygame.transform.smoothscale(source, scaled_size)
         rect = scaled.get_rect(center=(width // 2, height // 2))
         target.blit(scaled, rect)
         self._surface_cache[key] = target
-        if len(self._surface_cache) > 36:
+        if len(self._surface_cache) > 12:
             self._surface_cache.pop(next(iter(self._surface_cache)))
         return target
 
+    def scene_surface(self, photo_id: str, size: tuple[int, int], mode: str = "cover"):
+        return self.surface(photo_id, size, mode, scene=True)
+
     def thumbnail(self, photo_id: str, size: tuple[int, int]):
-        return self.surface(photo_id, size, "cover")
+        return self.scene_surface(photo_id, size, "cover")
+
+
+BLACK = (4, 5, 7)
