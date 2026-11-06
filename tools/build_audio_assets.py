@@ -5,6 +5,8 @@
 """
 from __future__ import annotations
 
+import argparse
+import hashlib
 import json
 import subprocess
 import sys
@@ -109,28 +111,48 @@ def narration(text: str, target: Path) -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--force", action="store_true", help="пересоздать даже неизменённые дорожки")
+    args = parser.parse_args()
     VOICE.mkdir(parents=True, exist_ok=True)
-    encode(OUT / "ambient.ogg", ambient(), 5)
+    manifest_path = OUT / "credits.json"
+    try:
+        previous = json.loads(manifest_path.read_text(encoding="utf-8")).get("text_hashes", {})
+    except (OSError, ValueError, json.JSONDecodeError):
+        previous = {}
+    if args.force or not (OUT / "ambient.ogg").is_file():
+        encode(OUT / "ambient.ogg", ambient(), 5)
     for name in ("choice", "page", "hover"):
-        encode(OUT / f"{name}.ogg", signal(name), 4)
+        if args.force or not (OUT / f"{name}.ogg").is_file():
+            encode(OUT / f"{name}.ogg", signal(name), 4)
     manifest = {
         "music": {"file": "ambient.ogg", "method": "Оригинальная программная синтезированная композиция: низкий дрон, ветер и редкие колокольные тона."},
         "voice": {"engine": "eSpeak NG 1.51", "language": "ru", "notice": "Синтетическое озвучивание, не запись живого актёра."},
         "files": [],
+        "text_hashes": {},
     }
+
+    def add_narration(text: str, target: Path) -> None:
+        relative = target.relative_to(OUT).as_posix()
+        digest = hashlib.sha256(text.encode("utf-8")).hexdigest()
+        if args.force or previous.get(relative) != digest or not target.is_file():
+            narration(text, target)
+        manifest["files"].append(relative)
+        manifest["text_hashes"][relative] = digest
+        if len(manifest["files"]) % 20 == 0:
+            print(f"Озвучивание: {len(manifest['files'])}/148", flush=True)
+
     for event in load_events():
-        target = VOICE / f"event_{event['id']}.ogg"
-        narration(f"{event['title']}. {event['description']}", target)
-        manifest["files"].append(target.relative_to(OUT).as_posix())
+        add_narration(f"{event['title']}. {event['description']}", VOICE / f"event_{event['id']}.ogg")
         for index, choice in enumerate(event["choices"]):
-            target = VOICE / f"result_{event['id']}_{index}.ogg"
-            narration(choice["result"], target)
-            manifest["files"].append(target.relative_to(OUT).as_posix())
+            add_narration(choice["result"], VOICE / f"result_{event['id']}_{index}.ogg")
     for ending_id, ending in ENDINGS.items():
-        target = VOICE / f"ending_{ending_id}.ogg"
-        narration(f"{ending['title']}. {ending['text']}", target)
-        manifest["files"].append(target.relative_to(OUT).as_posix())
-    (OUT / "credits.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        add_narration(f"{ending['title']}. {ending['text']}", VOICE / f"ending_{ending_id}.ogg")
+    expected = set(manifest["files"])
+    for stale in VOICE.glob("*.ogg"):
+        if stale.relative_to(OUT).as_posix() not in expected:
+            stale.unlink()
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"Аудио готово: {len(manifest['files'])} голосовых дорожек, эмбиент и 3 сигнала.")
 
 
