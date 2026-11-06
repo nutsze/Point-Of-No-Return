@@ -9,6 +9,8 @@ datas = [
     ("assets/portraits", "assets/portraits"),
     ("assets/locations", "assets/locations"),
     ("assets/events", "assets/events"),
+    ("assets/scenes", "assets/scenes"),
+    ("assets/audio", "assets/audio"),
 ]
 
 a = Analysis(

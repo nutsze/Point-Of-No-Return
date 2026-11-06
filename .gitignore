@@ -12,8 +12,12 @@ assets/originals/
 assets/portraits/
 assets/locations/
 assets/events/
+assets/scenes/
+assets/audio/*.ogg
+assets/audio/voice/
 assets/fonts/*.ttf
 assets/app.ico
+design/figma/*.svg
 
 # EXE и релизные архивы не хранятся в исходной ветке.
 *.exe
