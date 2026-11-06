@@ -29,6 +29,7 @@ class MediaTests(unittest.TestCase):
         for record in self.media.records:
             self.assertFalse(REQUIRED_FIELDS - record.keys())
             self.assertTrue((resource_root() / record["filename"]).is_file())
+            self.assertTrue((resource_root() / record["scene_filename"]).is_file())
             self.assertTrue(record["author"].strip())
             self.assertTrue(record["license"].strip())
             self.assertIn("Wikimedia Commons", self.media.caption(record["id"]))
@@ -40,6 +41,8 @@ class MediaTests(unittest.TestCase):
     def test_scaling_and_missing_photo_fallback(self):
         surface = self.media.surface("navalny_2020", (320, 200), "cover")
         self.assertEqual(surface.get_size(), (320, 200))
+        scene = self.media.scene_surface("navalny_2020", (2560, 1440), "cover")
+        self.assertEqual(scene.get_size(), (2560, 1440))
         missing = self.media.surface("not_in_library", (320, 200), "cover")
         self.assertEqual(missing.get_size(), (320, 200))
         self.assertIn("отсутствует", self.media.caption("not_in_library"))
