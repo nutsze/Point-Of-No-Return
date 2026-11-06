@@ -96,8 +96,27 @@ class MediaLibrary:
     def scene_surface(self, photo_id: str, size: tuple[int, int], mode: str = "cover"):
         return self.surface(photo_id, size, mode, scene=True)
 
+    def blurred_scene(self, photo_id: str, size: tuple[int, int]):
+        """Кэшированное размытие для титров; исходная фотография не изменяется."""
+        import pygame
+
+        width, height = max(1, int(size[0])), max(1, int(size[1]))
+        key = (photo_id + "__blurred", width, height, "cover", True)
+        if key not in self._surface_cache:
+            source = self.scene_surface(photo_id, (width, height), "cover")
+            small_size = (max(1, width // 28), max(1, height // 28))
+            small = pygame.transform.smoothscale(source, small_size)
+            self._surface_cache[key] = pygame.transform.smoothscale(small, (width, height))
+        return self._surface_cache[key]
+
     def thumbnail(self, photo_id: str, size: tuple[int, int]):
         return self.scene_surface(photo_id, size, "cover")
+
+    def all(self) -> list[dict[str, Any]]:
+        return self.records
+
+    def clear_cache(self) -> None:
+        self._surface_cache.clear()
 
 
 BLACK = (4, 5, 7)
