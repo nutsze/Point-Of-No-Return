@@ -5,7 +5,7 @@ from functools import partial
 
 from engine import CHAPTER_COUNT, ending_for, has_save
 from ui import FAINT, MUTED, RED, TEXT, WHITE
-from ..constants import ALT_WARNING
+from ..constants import ALT_WARNING, GAME_VERSION
 
 
 class StoryScreens:
@@ -16,7 +16,8 @@ class StoryScreens:
         self.canvas.text("2030", (70, 126), 132, WHITE, bold=True)
         self.canvas.text("ТОЧКА\nНЕВОЗВРАТА", (76, 267), 62, WHITE, max_width=700, bold=True, line_gap=0)
         self.canvas.text("Документальная политическая визуальная новелла", (80, 432), 23, MUTED, max_width=600)
-        self.canvas.line((80, 482), (490, 482), WHITE, 1, 100)
+        self.canvas.text(f"ВЕРСИЯ {GAME_VERSION}", (80, 464), 13, FAINT, bold=True)
+        self.canvas.line((80, 490), (490, 490), WHITE, 1, 100)
         entries = [
             ("НОВАЯ ИСТОРИЯ", self.start_new, True),
             ("ПРОДОЛЖИТЬ", self.continue_game, has_save()),
