@@ -5,18 +5,20 @@ from unittest.mock import patch
 
 os.environ.setdefault("SDL_VIDEODRIVER", "dummy")
 os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
-os.environ.pop("POR_CAPTURE", None)
 
 import pygame
 
 from engine import METRIC_NAMES
-from main import ALT_WARNING, Game
+from game.app import Game
+from game.constants import ALT_WARNING
+
+OPEN_DOOR_PATH = (0,) * 8 + (2, 2, 0, 0)
 
 
 class GameFlowTests(unittest.TestCase):
     def setUp(self):
         self.home = tempfile.TemporaryDirectory()
-        self.environment = patch.dict(os.environ, {"HOME": self.home.name, "POR_WIDTH": "1280", "POR_HEIGHT": "720"})
+        self.environment = patch.dict(os.environ, {"HOME": self.home.name})
         self.environment.start()
         self.game = Game()
 
@@ -26,47 +28,68 @@ class GameFlowTests(unittest.TestCase):
         self.environment.stop()
         self.home.cleanup()
 
-    def test_complete_campaign_save_and_continue(self):
-        path = (0, 0, 1, 1, 1, 2, 2, 2, 1, 1, 2, 1)
+    def play(self, path):
         game = self.game
         game.start_new()
-        self.assertEqual(game.screen, "briefing")
         game.go("event", phase="narration")
-        for index, choice_index in enumerate(path):
-            self.assertEqual(game.state["event_index"], index)
-            self.assertFalse(game.state["completed"])
-            game.screen_event()
+        for choice_index in path:
             game.go("event", phase="choice")
-            game.screen_event()
-            labels = " ".join(button.label for button in game.buttons)
-            for metric_name in METRIC_NAMES.values():
-                self.assertNotIn(metric_name, labels)
-            self.assertNotRegex(labels, r"[+-]\d")
-            pygame_event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_1 + choice_index, mod=0)
-            game.handle_key(pygame_event)
-            self.assertEqual(game.screen, "result")
-            self.assertEqual(len(game.state["history"]), index + 1)
+            game.choose(choice_index)
             game.next_chapter()
+            if game.state["completed"]:
+                break
+
+    def test_complete_branching_campaign_save_continue_and_credits(self):
+        game = self.game
+        self.play(OPEN_DOOR_PATH)
         self.assertTrue(game.state["completed"])
         self.assertEqual(game.state["ending_id"], "open_door")
         self.assertEqual(game.screen, "ending")
+        self.assertEqual(len(game.state["history"]), 12)
+        self.assertGreater(len(game.state["credits"]), 3)
         game.continue_game()
         self.assertEqual(game.screen, "ending")
-        self.assertEqual(len(game.state["history"]), 12)
+        game.go("roll")
+        game.update(1)
+        self.assertGreater(game.roll_offset, 0)
+        game.screen_roll()
+
+    def test_continue_restores_pending_result(self):
+        game = self.game
+        game.start_new()
+        game.go("event", phase="choice")
+        game.choose(0)
+        game.continue_game()
+        self.assertEqual(game.screen, "result")
+        self.assertEqual(game.params["choice_index"], 0)
+        game.next_chapter()
+        self.assertEqual(game.state["event_id"], "e01_legal")
+
+    def test_choices_open_different_paths_and_allow_switching(self):
+        game = self.game
+        game.start_new()
+        for choice, expected in [(0, "e01_legal")]:
+            game.go("event", phase="choice")
+            game.choose(choice)
+            game.next_chapter()
+            self.assertEqual(game.state["event_id"], expected)
+        for choice, expected in [(1, "e02_grassroots"), (2, "e03_media")]:
+            game.go("event", phase="choice")
+            game.choose(choice)
+            game.next_chapter()
+            self.assertEqual(game.state["event_id"], expected)
 
     def test_pause_settings_and_choice_phase_are_restored(self):
         game = self.game
-        game.state["event_index"] = 4
         game.go("event", phase="choice")
         game.pause()
-        self.assertEqual(game.screen, "pause")
         game.go("settings", return_to="pause")
-        game.handle_escape()
+        escape = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_ESCAPE, mod=0)
+        game.handle_key(escape)
         self.assertEqual(game.screen, "pause")
-        game.handle_escape()
+        game.handle_key(escape)
         self.assertEqual(game.screen, "event")
         self.assertEqual(game.params["phase"], "choice")
-        self.assertEqual(game.state["event_index"], 4)
 
     def test_audio_keyboard_toggles_and_manual_save(self):
         game = self.game
@@ -78,13 +101,36 @@ class GameFlowTests(unittest.TestCase):
         self.assertEqual(game.audio.muted, not muted)
         game.go("event", phase="narration")
         game.handle_key(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_s, mod=pygame.KMOD_CTRL))
-        self.assertIn("сохранена", game.notice)
+        self.assertIn("сохранена", game.notice.lower())
 
-    def test_alternative_warning_is_explicit(self):
+    def test_alternative_warning_and_no_visible_metric_effects(self):
         self.assertIn("СОБЫТИЯ РАЗВИВАЮТСЯ ИНАЧЕ, ЧЕМ В ДЕЙСТВИТЕЛЬНОСТИ", ALT_WARNING)
-        self.game.state["alternative_history"] = True
-        self.game.go("event", phase="narration")
-        self.game.screen_event()
+        game = self.game
+        game.state["alternative_history"] = True
+        game.go("event", phase="choice")
+        game.screen_event()
+        labels = " ".join(button.label for button in game.buttons)
+        for metric_name in METRIC_NAMES.values():
+            self.assertNotIn(metric_name, labels)
+        self.assertNotRegex(labels, r"[+-]\d")
+
+    def test_all_main_screens_render(self):
+        game = self.game
+        for screen in ("menu", "briefing", "timeline", "media", "credits", "people", "settings", "help", "pause"):
+            with self.subTest(screen=screen):
+                game.go(screen)
+                game._draw_frame()
+        game.go("event", phase="narration")
+        game._draw_frame()
+        game.go("event", phase="choice")
+        game._draw_frame()
+        game.choose(0)
+        game._draw_frame()
+        game.state["completed"] = True
+        game.state["ending_id"] = "open_door"
+        for screen in ("ending", "roll"):
+            game.go(screen)
+            game._draw_frame()
 
 
 if __name__ == "__main__":

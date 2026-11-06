@@ -57,7 +57,7 @@ class LocalAudioTests(unittest.TestCase):
 
     def test_all_scenes_and_audio_are_local_and_nonempty(self):
         self.assertEqual(len(scene_paths()), 9)
-        self.assertEqual(len(audio_paths()), 62)
+        self.assertEqual(len(audio_paths()), 153)
         for path in scene_paths() + audio_paths():
             with self.subTest(path=path.name):
                 self.assertTrue(path.is_file())
