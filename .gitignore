@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+build/
+dist/
+*.spec.bak
+.DS_Store
+Thumbs.db
+
+# Локальные бинарные ресурсы восстанавливаются bootstrap_assets.py.
+assets/originals/
+assets/portraits/
+assets/locations/
+assets/events/
+assets/fonts/*.ttf
+assets/app.ico
+
+# EXE и релизные архивы не хранятся в исходной ветке.
+*.exe
+*.zip
