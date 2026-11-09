@@ -41,7 +41,6 @@ jobs:
           files: dist/TenWinters.exe
           name: "Ten Winters — Alpha 0.1"
           prerelease: true
-          generate_release_notes: true
           body: |
             Альфа-версия 0.1. Визуальная новелла, 2020-2030.
 
