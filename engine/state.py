@@ -55,7 +55,7 @@ class State:
 
 
 def save_path() -> Path:
-    return Path.home() / ".point_of_no_return_save.json"
+    return Path.home() / ".ten_winters_save.json"
 
 
 def save(state: State) -> None:

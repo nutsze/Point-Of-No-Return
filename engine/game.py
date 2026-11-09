@@ -47,7 +47,7 @@ def ask_text(prompt: str) -> str:
 def character_creation() -> state_mod.State:
     s = state_mod.State()
     rule("═")
-    print("ТОЧКА НЕВОЗВРАТА".center(WIDTH))
+    print("TEN WINTERS".center(WIDTH))
     print("2020-2030 · вымышленный герой на фоне реальной истории".center(WIDTH))
     rule("═")
     print()

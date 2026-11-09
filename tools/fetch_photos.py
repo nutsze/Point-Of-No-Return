@@ -6,7 +6,7 @@ import urllib.request
 
 from PIL import Image, ImageEnhance, ImageOps, ImageDraw
 
-UA = "PointOfNoReturnGame/0.1 (educational visual-novel project; non-commercial)"
+UA = "TenWintersGame/0.1 (educational visual-novel project; non-commercial)"
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT_DIR = os.path.join(REPO_ROOT, "assets", "photos")
 os.makedirs(OUT_DIR, exist_ok=True)
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     import json as _json
     import tempfile
 
-    tmp_dir = tempfile.mkdtemp(prefix="point_of_no_return_photos_")
+    tmp_dir = tempfile.mkdtemp(prefix="ten_winters_photos_")
     credits_path = os.path.join(OUT_DIR, "credits.json")
     credits = {}
     if os.path.exists(credits_path):

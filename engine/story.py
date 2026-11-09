@@ -1,6 +1,6 @@
-"""Story graph for 'Точка невозврата': a fictional protagonist living through
-real, documented events of Russian political history, 2020-2030 (2027-2030
-is speculative future).
+"""Story graph for 'Point of No Return': a fictional protagonist living
+through real, documented events of Russian political history, 2020-2030
+(2027-2030 is speculative future).
 
 Design rule: real people are never given invented dialogue. They appear only
 as news items, historical facts and in the closing dedication. Every node

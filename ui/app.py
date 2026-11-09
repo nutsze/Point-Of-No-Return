@@ -59,7 +59,7 @@ class Rect:
 class App:
     def __init__(self):
         pygame.init()
-        pygame.display.set_caption("Точка невозврата")
+        pygame.display.set_caption("Ten Winters")
         self.windowed_size = DEFAULT_SIZE
         self.fullscreen = False
         self.screen = pygame.display.set_mode(self.windowed_size, pygame.RESIZABLE)
@@ -253,7 +253,7 @@ class App:
         w, h = self.screen.get_size()
         m = self.margin
         y = m
-        self.screen.blit(self.f_title.render("ТОЧКА НЕВОЗВРАТА", True, ACCENT), (m, y))
+        self.screen.blit(self.f_title.render("TEN WINTERS", True, ACCENT), (m, y))
         y += int(self.f_title.get_height() * 1.4)
         self.screen.blit(self.f_small.render(
             "2020-2030 · вымышленный герой на фоне реальной истории", True, MUTED), (m, y))
