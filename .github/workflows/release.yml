@@ -1,0 +1,58 @@
+name: Build and release Windows EXE
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build tools
+        run: pip install pyinstaller
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+      - name: Build EXE
+        run: >
+          pyinstaller --onefile --console --name PointOfNoReturn
+          --distpath dist main.py
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PointOfNoReturn-windows
+          path: dist/PointOfNoReturn.exe
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/PointOfNoReturn.exe
+          name: "Точка невозврата — Alpha 0.1"
+          prerelease: true
+          generate_release_notes: true
+          body: |
+            Альфа-версия 0.1. Терминальная визуальная новелла, 2020-2030.
+
+            ## Запуск
+            Скачай `PointOfNoReturn.exe` и запусти — Python не нужен,
+            всё собрано в один файл.
+
+            ## Из исходников
+            ```
+            python3 main.py
+            ```
+
+            Подробности, список реальных фигур в игре и правила
+            расширения сюжета — в `README.md`.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
