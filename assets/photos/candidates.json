@@ -214,5 +214,19 @@
     "date": "2024-02-18",
     "description": "A makeshift memorial at the Russian embassy in Warsaw, Poland after the death of Alexei Navalny.",
     "alternatives": []
+  },
+  "navalny_funeral": {
+    "title": "File:Funeral of Alexei Navalny March 1st 2024.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/78/Funeral_of_Alexei_Navalny_March_1st_2024.jpg/960px-Funeral_of_Alexei_Navalny_March_1st_2024.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Funeral_of_Alexei_Navalny_March_1st_2024.jpg",
+    "width": 1280,
+    "height": 960,
+    "license": "CC BY 4.0",
+    "artist": "Акутагава",
+    "date": "2024-03-01",
+    "description": "Funeral of Alexei Navalny at Borisovskoye Cemetery in Moscow. March 1st 2024",
+    "alternatives": [
+      "File:Funeral of Alexei Navalny March 1st 2024 2.jpg"
+    ]
   }
 }
