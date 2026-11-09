@@ -88,6 +88,15 @@ CHAPTERS = {
     12: ("Десятая зима", "2027–2030"),
 }
 
+# background for any scene whose own photo is missing; first available wins
+CHAPTER_PHOTOS = {
+    1: ["winter_city", "panelki", "kremlin_night"], 2: ["omon", "winter_city"], 3: ["panelki", "winter_city"],
+    4: ["polling", "winter_city"], 5: ["antiwar_2022", "omon"], 6: ["metro", "winter_city"],
+    7: ["military_office", "panelki"], 8: ["courtroom", "winter_city"], 9: ["winter_city", "panelki"],
+    10: ["navalny_memorial", "winter_city"], 11: ["winter_city", "panelki"], 12: ["kremlin_night", "kremlin"],
+}
+FALLBACK_PHOTOS = ["winter_city", "kremlin_night", "panelki", "kremlin"]
+
 ORGS = {
     None: "без организации",
     "fbk": "ФБК и штабы Навального",
@@ -190,7 +199,7 @@ NODES = {
 # ---- 1. Чужие новости -------------------------------------------------------
 
 "c1_khab": dict(
-    chapter=1, date="Июль 2020", place="{city}", music="ambient",
+    chapter=1, date="Июль 2020", place="{city}", photo="khabarovsk", music="ambient",
     text=(
         "{name} {life}. Жизнь как жизнь: {routine}, сериалы, "
         "по пятницам — бар с друзьями. О политике ты не думаешь вообще. "
@@ -262,7 +271,7 @@ NODES = {
 
 "c2_square": dict(
     chapter=2, date="23 января 2021", place="{city}, центр", music="tension",
-    photo="protest_2021",
+    photo=["protest_2021", "omon"],
     text=(
         "Минус двадцать. Пар изо рта тысяч людей висит над площадью, как туман. "
         "Никто не кричит в микрофон — микрофонов нет. Люди просто стоят. "
@@ -275,13 +284,13 @@ NODES = {
     source="По данным ОВД-Инфо, 23 января 2021 года на акциях в поддержку Навального "
            "задержаны тысячи человек более чем в ста городах.",
     choices=[
-        ("Поднять очки и снять на видео, как его бьют.", "c2_court", both(voice(2), risky(1))),
+        ("Поднять очки и снять на видео, как его бьют.", "c2_court", both(voice(2), risky(1), flag("filmed"))),
         ("Увести Марину дворами, пока не поздно.", "c2_court", voice(1)),
     ],
 ),
 
 "c2_home": dict(
-    chapter=2, date="23 января 2021", place="{city}", music="ambient",
+    chapter=2, date="23 января 2021", place="{city}", photo="panelki", music="ambient",
     text=(
         "Ты остаёшься дома и смотришь стрим. Марина всё-таки пошла одна.\n\n"
         "В 19:40 сообщение: «Меня взяли. Телефон заберут». Больше она не отвечает. "
@@ -289,7 +298,7 @@ NODES = {
         "с серым лицом и штрафом в двадцать тысяч. Тебе она не говорит ни слова."
     ),
     choices=[
-        ("Подойти и извиниться.", "c2_court", voice(1)),
+        ("Подойти и извиниться.", "c2_court", both(voice(1), flag("apologized"))),
         ("Сделать вид, что ничего не было.", "c2_court", flag("ashamed")),
     ],
 ),
@@ -308,7 +317,7 @@ NODES = {
 # ---- 3. Вне закона ----------------------------------------------------------
 
 "c3_ban": dict(
-    chapter=3, date="Апрель — июнь 2021", place="{city}", music="ambient",
+    chapter=3, date="Апрель — июнь 2021", place="{city}", photo="panelki", music="ambient",
     text=(
         "Прокуратура требует признать ФБК и штабы Навального экстремистскими. "
         "В июне суд это сделает: донат, репост, участие — теперь статья.\n\n"
@@ -330,7 +339,7 @@ NODES = {
 ),
 
 "c3_fbk": dict(
-    chapter=3, date="Лето 2021", place="{city}", music="tension",
+    chapter=3, date="Лето 2021", place="{city}", photo="panelki", music="tension",
     text=(
         "Ты ставишь ежемесячный донат с карты, которую оформил[[|а]] на старый паспорт. "
         "Олег учит пользоваться VPN, чистить переписку, не брать телефон на встречи.\n\n"
@@ -356,7 +365,7 @@ NODES = {
 ),
 
 "c3_ovd": dict(
-    chapter=3, date="Лето 2021", place="{city}", music="ambient",
+    chapter=3, date="Лето 2021", place="{city}", photo="autozak", music="ambient",
     text=(
         "Ночная смена на горячей линии. Звонит девушка из отдела полиции: у неё забрали "
         "телефон, адвоката не пускают, на неё кричат. Ты находишь ей защитника за сорок "
@@ -368,7 +377,7 @@ NODES = {
 ),
 
 "c3_alone": dict(
-    chapter=3, date="Лето 2021", place="{city}", music="ambient",
+    chapter=3, date="Лето 2021", place="{city}", photo="winter_city", music="ambient",
     text=(
         "Ты уходишь первым. В подъезде пахнет кошками и сыростью, и почему-то очень "
         "хочется плакать.\n\n"
@@ -381,7 +390,7 @@ NODES = {
 # ---- 4. Умное голосование ---------------------------------------------------
 
 "c4_vote": dict(
-    chapter=4, date="17–19 сентября 2021", place="{city}", music="ambient",
+    chapter=4, date="17–19 сентября 2021", place="{city}", photo="polling", music="ambient",
     text=(
         "Выборы в Госдуму. «Умное голосование» советует голосовать за любого, кто может "
         "обыграть «Единую Россию». В твоём округе это коммунист — немолодой, скучный, "
@@ -391,14 +400,14 @@ NODES = {
     ),
     source="Приложение «Навальный» удалено из App Store и Google Play 17 сентября 2021 года.",
     choices=[
-        ("Стать наблюдателем на участке.", "c4_observer", both(voice(2), risky(1))),
+        ("Стать наблюдателем на участке.", "c4_observer", both(voice(2), risky(1), flag("observer"))),
         ("Проголосовать за коммуниста. Зажав нос.", "c4_kprf_vote", voice(1)),
         ("Не ходить. Всё равно нарисуют.", "c4_after", None),
     ],
 ),
 
 "c4_observer": dict(
-    chapter=4, date="19 сентября 2021", place="{city}, избирательный участок", music="tension",
+    chapter=4, date="19 сентября 2021", place="{city}, избирательный участок", photo="polling", music="tension",
     text=(
         "Три дня на жёстком стуле. На второй вечер ты видишь, как член комиссии пересыпает "
         "в урну пачку бюллетеней из сумки. Ты снимаешь. Председатель кричит, что "
@@ -410,7 +419,7 @@ NODES = {
 ),
 
 "c4_kprf_vote": dict(
-    chapter=4, date="19 сентября 2021", place="{city}", music="ambient",
+    chapter=4, date="19 сентября 2021", place="{city}", photo="polling", music="ambient",
     text=(
         "Ты ставишь галочку за человека, чью фамилию забудешь через неделю. "
         "Странное чувство — голосовать не «за», а «против».\n\n"
@@ -421,7 +430,7 @@ NODES = {
 ),
 
 "c4_kprf_offer": dict(
-    chapter=4, date="Октябрь 2021", place="{city}", music="ambient",
+    chapter=4, date="Октябрь 2021", place="{city}", photo="winter_city", music="ambient",
     text=(
         "К тебе подходит местный депутат-коммунист — неожиданно молодой. «Нам нужны "
         "люди. У нас мандаты, у нас легальность, — говорит он. — Без нас вас просто "
@@ -430,12 +439,12 @@ NODES = {
     choices=[
         ("Вступить в КПРФ — системная оппозиция лучше никакой.", "c4_after",
          lambda s: s.set("org", "kprf") if s.data["org"] in (None, "kprf") else None),
-        ("Отказаться. Это та же власть, только с другим флагом.", "c4_after", voice(1)),
+        ("Отказаться. Это та же власть, только с другим флагом.", "c4_after", both(voice(1), flag("refused_kprf"))),
     ],
 ),
 
 "c4_after": dict(
-    chapter=4, date="Осень 2021", place="{city}", music="ambient",
+    chapter=4, date="Осень 2021", place="{city}", photo="winter_city", music="ambient",
     text=(
         "Осенью суд постановляет ликвидировать «Мемориал» — организацию, которая тридцать "
         "лет собирала имена расстрелянных и сосланных. На границе с Украиной, пишут "
@@ -447,7 +456,7 @@ NODES = {
 ),
 
 "p_work": dict(
-    chapter=4, date="Декабрь 2021", place="{city}, {at_work}", music="tension", pressure=True,
+    chapter=4, date="Декабрь 2021", place="{city}, {at_work}", photo={"student": "auditorium", "teacher": "classroom", "doctor": "hospital", "default": "metro"}, music="tension", pressure=True,
     text={
         "default": (
             "{Boss} вызывает тебя и закрывает дверь. «Мне звонили. Не спрашивай откуда. "
@@ -476,7 +485,7 @@ NODES = {
 # ---- 5. Утро ----------------------------------------------------------------
 
 "c5_morning": dict(
-    chapter=5, date="24 февраля 2022, 5:50", place="{city}", music="tension",
+    chapter=5, date="24 февраля 2022, 5:50", place="{city}", photo="panelki", music="tension",
     text=(
         "Телефон разрывается в шесть утра. Мама, Марина, брат Дима, {work_chat}. "
         "Одно и то же видео: колонны техники, ракеты над Киевом, люди в метро "
@@ -509,7 +518,7 @@ NODES = {
 ),
 
 "c5_vesna": dict(
-    chapter=5, date="Февраль — март 2022", place="{city}", music="tension",
+    chapter=5, date="Февраль — март 2022", place="{city}", photo="winter_city", music="tension",
     text=(
         "Ты находишь в Telegram «Весну» — молодёжное движение, которое одним из первых "
         "позвало людей на улицы против войны. Тебе присылают макет листовки: "
@@ -524,7 +533,7 @@ NODES = {
 # ---- 6. Статья --------------------------------------------------------------
 
 "c6_letter": dict(
-    chapter=6, date="Март 2022", place="{city}, {at_work}", music="tension",
+    chapter=6, date="Март 2022", place="{city}, {at_work}", photo={"student": "auditorium", "teacher": "classroom", "doctor": "hospital", "default": "metro"}, music="tension",
     text={
         "default": (
             "Принимают закон о «фейках» об армии: до пятнадцати лет. {Boss} собирает всех "
@@ -560,21 +569,21 @@ NODES = {
         ({"default": "Отказаться подписывать.",
           "teacher": "Отказаться вести этот урок.",
           "journalist": "Написать в тексте слово «война». Пусть закрывают."},
-         "c6_quit", both(voice(2), risky(1), flag("jobless"))),
+         "c6_quit", both(voice(2), risky(1), flag("jobless"), flag("letter", "refused"))),
         ({"default": "Подписать, а копию письма слить в независимое медиа.",
           "teacher": "Провести урок, но сказать детям правду между строк.",
           "journalist": "Подчиниться, а ночью публиковать правду анонимно."},
-         "c6_leak", both(voice(1), risky(2))),
+         "c6_leak", both(voice(1), risky(2), flag("letter", "leaked"))),
         ({"default": "Подписать. Кредит, мама, жить на что-то надо.",
           "student": "Подписать. Отчислят — до армии один шаг.",
           "teacher": "Провести урок по методичке.",
           "journalist": "Писать «спецоперация». Работа есть работа."},
-         "c6_signed", voice(-1)),
+         "c6_signed", both(voice(-1), flag("letter", "signed"))),
     ],
 ),
 
 "c6_quit": dict(
-    chapter=6, date="Март 2022", place="{city}", music="ambient",
+    chapter=6, date="Март 2022", place="{city}", photo={"student": "auditorium", "teacher": "classroom", "doctor": "hospital", "default": "metro"}, music="ambient",
     text={
         "default": (
             "Ты собираешь коробку со стола. Никто не смотрит в глаза. Только уборщица "
@@ -614,7 +623,7 @@ NODES = {
 ),
 
 "c6_leak": dict(
-    chapter=6, date="Март 2022", place="{city}, {at_work}", music="tension",
+    chapter=6, date="Март 2022", place="{city}, {at_work}", photo={"student": "auditorium", "teacher": "classroom", "doctor": "hospital", "default": "metro"}, music="tension",
     text={
         "default": (
             "Через два дня фото письма публикует независимое издание. Через неделю "
@@ -640,7 +649,7 @@ NODES = {
 ),
 
 "c6_signed": dict(
-    chapter=6, date="Март 2022", place="{city}", music="grief",
+    chapter=6, date="Март 2022", place="{city}", photo={"student": "auditorium", "teacher": "classroom", "doctor": "hospital", "default": "metro"}, music="grief",
     text={
         "default": (
             "Твоя подпись — шестая в списке. Ручка почему-то пишет плохо, приходится "
@@ -675,7 +684,7 @@ NODES = {
 ),
 
 "c6_bucha": dict(
-    chapter=6, date="Начало апреля 2022", place="{city}", music="grief",
+    chapter=6, date="Начало апреля 2022", place="{city}", photo="winter_city", music="grief",
     text=(
         "Российские войска уходят из-под Киева. В городке Буча журналисты находят "
         "убитых мирных жителей прямо на улицах — у некоторых связаны руки. "
@@ -695,7 +704,7 @@ NODES = {
 ),
 
 "p_center_e": dict(
-    chapter=6, date="Апрель 2022", place="{city}", music="tension", pressure=True,
+    chapter=6, date="Апрель 2022", place="{city}", photo="lubyanka", music="tension", pressure=True,
     text=(
         "Звонок с незнакомого номера. «Центр по противодействию экстремизму, капитан "
         "Сидоров. Нам бы с вами побеседовать. Неформально. Завтра в десять, "
@@ -715,7 +724,7 @@ NODES = {
 # ---- 7. Повестка ------------------------------------------------------------
 
 "c7_gorinov": dict(
-    chapter=7, date="8 июля 2022", place="{city}", music="grief", photo="gorinov",
+    chapter=7, date="8 июля 2022", place="{city}", music="grief", photo=["gorinov", "courtroom"],
     text={
         "default": (
             "Муниципальному депутату из Москвы Алексею Горинову дают семь лет. "
@@ -735,14 +744,14 @@ NODES = {
     source="Алексей Горинов приговорён к 7 годам колонии 8 июля 2022 года — "
            "первый реальный срок по статье о «фейках» об армии.",
     choices=[
-        ("Написать ему письмо в СИЗО.", "c7_draft", voice(1)),
+        ("Написать ему письмо в СИЗО.", "c7_draft", both(voice(1), flag("letters"))),
         ("Удалить старые посты. На всякий случай.", "c7_draft", both(voice(-1), risky(-1))),
     ],
 ),
 
 "c7_draft": dict(
     chapter=7, date="21 сентября 2022", place="{city}", music="tension",
-    photo="mobilization_2022",
+    photo=["mobilization_2022", "military_office"],
     text=(
         "Объявлена «частичная» мобилизация. Повестки раздают у подъездов, в общежитиях, "
         "на проходных заводов. Мужчины не выходят на улицу.\n\n"
@@ -760,7 +769,7 @@ NODES = {
 ),
 
 "c7_border": dict(
-    chapter=7, date="Сентябрь 2022", place="Верхний Ларс", music="tension",
+    chapter=7, date="Сентябрь 2022", place="Верхний Ларс", photo=["mobilization_2022", "tbilisi"], music="tension",
     text=(
         "Очередь к грузинской границе — десятки километров машин. Люди идут пешком "
         "с чемоданами вдоль серпантина. Ночью холодно, и кто-то раздаёт чай из багажника.\n\n"
@@ -769,13 +778,13 @@ NODES = {
         "Можно пойти за ним."
     ),
     choices=[
-        ("Уйти за ним. Здесь больше нечего ждать.", "c8_abroad", flag("left")),
-        ("Вернуться домой. Кто-то должен остаться.", "c8_trial_route", voice(1)),
+        ("Уйти за ним. Здесь больше нечего ждать.", "c8_abroad", both(flag("left"), flag("dima_abroad"))),
+        ("Вернуться домой. Кто-то должен остаться.", "c8_trial_route", both(voice(1), flag("dima_abroad"))),
     ],
 ),
 
 "c7_lawyer": dict(
-    chapter=7, date="Сентябрь — октябрь 2022", place="{city}", music="tension",
+    chapter=7, date="Сентябрь — октябрь 2022", place="{city}", photo="military_office", music="tension",
     text=(
         "Три недели вы с юристом ходите по кабинетам военкомата. Справки, медкомиссия, "
         "жалобы в прокуратуру. Дима не ночует дома. На четвёртой неделе повестку "
@@ -787,7 +796,7 @@ NODES = {
 ),
 
 "c7_stay": dict(
-    chapter=7, date="Октябрь 2022", place="{city}", music="grief",
+    chapter=7, date="Октябрь 2022", place="{city}", photo="military_office", music="grief",
     text=(
         "Дима уезжает в учебку под Ростовом. Пишет первые две недели: кормят плохо, "
         "форму купили сами, бронежилетов на всех не хватает. «Говорят, на передовую "
@@ -797,7 +806,7 @@ NODES = {
 ),
 
 "c8_trial_route": dict(
-    chapter=7, date="Осень 2022", place="{city}", music="tension",
+    chapter=7, date="Осень 2022", place="{city}", photo="panelki", music="tension",
     text=(
         "Осень тянется, как один длинный серый день. Мама звонит каждый вечер "
         "и каждый раз спрашивает одно и то же: «Ты там ничего такого не делаешь?»"
@@ -806,7 +815,7 @@ NODES = {
 ),
 
 "p_mom": dict(
-    chapter=7, date="Ноябрь 2022", place="{city}, у мамы", music="grief", pressure=True,
+    chapter=7, date="Ноябрь 2022", place="{city}, у мамы", photo="panelki", music="grief", pressure=True,
     text=(
         "Мама открывает дверь и не обнимает тебя. На столе — повестка на твоё имя "
         "и визитка участкового.\n\n"
@@ -816,14 +825,14 @@ NODES = {
     ),
     choices=[
         ("«Мам, стыдно должно быть не мне».", "c8_trial", both(voice(1), flag("mom_argued"))),
-        ("Пообещать ей, что затихнешь.", "c8_trial", both(voice(-1), risky(-1))),
+        ("Пообещать ей, что затихнешь.", "c8_trial", both(voice(-1), risky(-1), flag("promised_mom"))),
     ],
 ),
 
 # ---- 8. Двадцать пять лет --------------------------------------------------
 
 "c8_abroad": dict(
-    chapter=8, date="2023", place="Тбилиси", music="ambient", photo="kara_murza",
+    chapter=8, date="2023", place="Тбилиси", music="ambient", photo=["tbilisi", "kara_murza"],
     text=(
         "Съёмная комната на троих, {abroad_job}, вечное «а вы надолго?» "
         "от местных. На стенах в старом городе — «Russians go home». Ты не обижаешься. "
@@ -855,7 +864,7 @@ NODES = {
 ),
 
 "c8_dima_news": dict(
-    chapter=8, date="Май 2023", place="{city}", music="grief",
+    chapter=8, date="Май 2023", place="{city}", photo="winter_city", music="grief",
     text=(
         "Мама звонит и молчит. Потом говорит одно слово — «Дима» — и кладёт трубку.\n\n"
         "Его привозят в закрытом гробу. На кладбище военкомовский капитан вручает маме "
@@ -863,13 +872,13 @@ NODES = {
         "вспоминаешь, как сказал[[|а]] ему: «Всё обойдётся»."
     ),
     choices=[
-        ("Злость сильнее страха. Больше ни шагу назад.", "c8_trust", both(voice(3), risky(1))),
-        ("Сломаться. Больше ничего не хочется.", "c8_trust", voice(-2)),
+        ("Злость сильнее страха. Больше ни шагу назад.", "c8_trust", both(voice(3), risky(1), flag("grief", "rage"))),
+        ("Сломаться. Больше ничего не хочется.", "c8_trust", both(voice(-2), flag("grief", "broken"))),
     ],
 ),
 
 "c8_trust": dict(
-    chapter=8, date="Лето 2023", place="{city}", music="tension",
+    chapter=8, date="Лето 2023", place="{city}", photo="metro", music="tension",
     text=(
         "Задерживают двоих из вашего круга — тех, о чьих встречах знали только свои. "
         "Утечка явно изнутри.\n\n"
@@ -885,7 +894,7 @@ NODES = {
 ),
 
 "c8_oleshky": dict(
-    chapter=8, date="6 июня 2023", place="{city}", music="grief",
+    chapter=8, date="6 июня 2023", place="{city}", photo="kakhovka", music="grief",
     text=(
         "Ночью взрывают Каховскую ГЭС. Вода идёт вниз по Днепру и за сутки накрывает "
         "Алёшки — Олешки, городок на оккупированном левом берегу. Люди сидят на крышах "
@@ -897,13 +906,13 @@ NODES = {
            "(Алёшек) на оккупированном левом берегу Днепра; свидетельства жителей "
            "и волонтёров в независимых СМИ.",
     choices=[
-        ("Перевести деньги волонтёрам, которые вывозят людей.", "c8_mutiny", voice(1)),
+        ("Перевести деньги волонтёрам, которые вывозят людей.", "c8_mutiny", both(voice(1), flag("helped_flood"))),
         ("Выключить телефон. Больше не могу.", "c8_mutiny", None),
     ],
 ),
 
 "c8_mutiny": dict(
-    chapter=8, date="24 июня 2023", place="{city}", music="tension",
+    chapter=8, date="24 июня 2023", place="{city}", photo="wagner_rostov", music="tension",
     text=(
         "Утром ты просыпаешься в другой стране. Пригожин и его наёмники захватили штаб "
         "округа в Ростове, колонна идёт на Москву. На трассах экскаваторы срывают асфальт. "
@@ -921,7 +930,7 @@ NODES = {
 ),
 
 "c8_words": dict(
-    chapter=8, date="16 ноября 2023", place="{city}", music="grief", photo="skochilenko",
+    chapter=8, date="16 ноября 2023", place="{city}", music="grief", photo=["skochilenko", "courtroom"],
     text={
         "default": (
             "Петербургской художнице Саше Скочиленко дают семь лет. Весной 2022-го она "
@@ -941,7 +950,7 @@ NODES = {
     choices=[
         ("Распечатать такой же ценник и оставить в магазине.",
          pressure("p_doxx", lambda s: in_russia(s) and s.data["risk"] >= 4, "c9_queue"),
-         both(voice(2), risky(2))),
+         both(voice(2), risky(2), flag("price_tag"))),
         ("Отправить ей открытку в СИЗО.",
          pressure("p_doxx", lambda s: in_russia(s) and s.data["risk"] >= 6, "c9_queue"), voice(1)),
         ("Ничего. Бумажки этого не стоят.",
@@ -950,7 +959,7 @@ NODES = {
 ),
 
 "p_doxx": dict(
-    chapter=8, date="Декабрь 2023", place="{city}", music="tension", pressure=True,
+    chapter=8, date="Декабрь 2023", place="{city}", photo="panelki", music="tension", pressure=True,
     text=(
         "Марина присылает скриншот. Z-канал с сотней тысяч подписчиков: «Предатели "
         "из {city_gen}». Твоё фото, адрес, {workplace}, имя мамы. Под постом — "
@@ -959,12 +968,12 @@ NODES = {
     ),
     choices=[
         ("Снять другую квартиру и сменить номер.", "c9_queue", risky(-1)),
-        ("Оставить надпись. Пусть соседи смотрят, кто здесь живёт.", "c9_queue", both(voice(1), risky(1))),
+        ("Оставить надпись. Пусть соседи смотрят, кто здесь живёт.", "c9_queue", both(voice(1), risky(1), flag("kept_sign"))),
     ],
 ),
 
 "p_guilt": dict(
-    chapter=8, date="Декабрь 2023", place="{city}", music="grief", pressure=True,
+    chapter=8, date="Декабрь 2023", place="{city}", photo="winter_city", music="grief", pressure=True,
     text=(
         "Ночью приходит сообщение от Марины — первое за долгое время. «Я сегодня "
         "была на суде у знакомого. Пять человек в зале. Пять. Помнишь, как в январе "
@@ -973,7 +982,7 @@ NODES = {
         "непрочитанным — ты специально не открываешь чат."
     ),
     choices=[
-        ("Ответить: «Прости. В следующий раз позови меня».", "c9_queue", voice(2)),
+        ("Ответить: «Прости. В следующий раз позови меня».", "c9_queue", both(voice(2), flag("marina_friend"))),
         ("Не отвечать.", "c9_queue", None),
     ],
 ),
@@ -992,14 +1001,14 @@ NODES = {
     source="Сбор подписей за выдвижение Бориса Надеждина, январь 2024. "
            "8 февраля ЦИК отказал ему в регистрации.",
     choices=[
-        ("Стать сборщиком подписей на неделю.", "c9_refusal", both(voice(2), risky(1))),
+        ("Стать сборщиком подписей на неделю.", "c9_refusal", both(voice(2), risky(1), flag("collector"))),
         ("Постоять в очереди и расписаться.", "c9_refusal", voice(1)),
         ("Пройти мимо. Его всё равно не зарегистрируют.", "c9_refusal", None),
     ],
 ),
 
 "c9_refusal": dict(
-    chapter=9, date="8 февраля 2024", place="{city}", music="grief",
+    chapter=9, date="8 февраля 2024", place="{city}", photo="polling", music="grief",
     text=(
         "ЦИК находит «брак» в подписях и отказывает в регистрации. Сто тысяч "
         "подписей, собранных на морозе, превращаются в бумагу.\n\n"
@@ -1009,7 +1018,7 @@ NODES = {
 ),
 
 "p_car": dict(
-    chapter=9, date="Февраль 2024", place="{city}", music="tension", pressure=True,
+    chapter=9, date="Февраль 2024", place="{city}", photo="winter_city", music="tension", pressure=True,
     text=(
         "Серая «Гранта» стоит под окнами третий день. Двигатель работает, внутри двое. "
         "Когда ты идёшь {to_work}, она медленно едет следом.\n\n"
@@ -1041,8 +1050,8 @@ NODES = {
            "За возложение цветов к мемориалам в первые дни задержаны сотни человек; "
            "в Москве — в том числе у Соловецкого камня на Лубянской площади.",
     choices=[
-        ("Положить цветы. И остаться.", "c10_widow", both(voice(2), risky(2))),
-        ("Положить цветы и сразу уйти.", "c10_widow", both(voice(1), risky(1))),
+        ("Положить цветы. И остаться.", "c10_widow", both(voice(2), risky(2), flag("flowers"))),
+        ("Положить цветы и сразу уйти.", "c10_widow", both(voice(1), risky(1), flag("flowers"))),
         ("Смотреть издалека. Подойти не хватает сил.", "c10_widow", None),
     ],
 ),
@@ -1072,7 +1081,7 @@ NODES = {
 ),
 
 "c10_noon": dict(
-    chapter=10, date="17 марта 2024, 12:00", place="{city}", music="ambient",
+    chapter=10, date="17 марта 2024, 12:00", place="{city}", photo="polling", music="ambient",
     text=lambda s: (
         "«Выборы» президента. Призыв простой: прийти на участок всем вместе ровно "
         "в полдень. Без лозунгов, без плакатов — просто прийти.\n\n"
@@ -1092,7 +1101,7 @@ NODES = {
 ),
 
 "c10_crocus": dict(
-    chapter=10, date="22 марта 2024", place="{city}", music="grief",
+    chapter=10, date="22 марта 2024", place="{city}", photo="crocus", music="grief",
     text=(
         "Теракт в «Крокус Сити Холле». Вооружённые люди расстреливают зрителей перед "
         "концертом и поджигают зал. Погибает больше ста сорока человек.\n\n"
@@ -1107,7 +1116,7 @@ NODES = {
 ),
 
 "c10_arrest": dict(
-    chapter=10, date="Апрель 2024, 6:00", place="{city}", music="tension",
+    chapter=10, date="Апрель 2024, 6:00", place="{city}", photo=["autozak", "omon"], music="tension",
     text=(
         "Звонок в дверь. Не звонок — удары. «Откройте, полиция!» Ты успеваешь "
         "надеть джинсы.\n\n"
@@ -1137,7 +1146,7 @@ NODES = {
 ),
 
 "c11_raid": dict(
-    chapter=11, date="Ноябрь 2024", place="{city}", music="tension",
+    chapter=11, date="Ноябрь 2024", place="{city}", photo="courtroom", music="tension",
     text=(
         "На допросе следователь кладёт перед тобой распечатки: ваши переписки, "
         "адреса встреч, твои донаты с 2021 года. Всё, что ты рассказывал[[|а]] Марине.\n\n"
@@ -1152,7 +1161,7 @@ NODES = {
 ),
 
 "c11_flee": dict(
-    chapter=11, date="Декабрь 2024", place="граница", music="tension",
+    chapter=11, date="Декабрь 2024", place="граница", photo="winter_city", music="tension",
     text=(
         "Ночной автобус, пеший переход через лес, мокрые до колена джинсы. "
         "Тебя объявляют в розыск через неделю после того, как ты добираешься до Еревана. "
@@ -1162,7 +1171,7 @@ NODES = {
 ),
 
 "c11_prison": dict(
-    chapter=11, date="2025", place="исправительная колония", music="grief",
+    chapter=11, date="2025", place="исправительная колония", photo="penal_colony", music="grief",
     text=(
         "Барак на восемьдесят человек. Подъём в шесть. ШИЗО за «неправильно застёгнутую "
         "пуговицу». Письма приходят через месяц, с вымаранными строками.\n\n"
@@ -1174,7 +1183,7 @@ NODES = {
 ),
 
 "c11_drones": dict(
-    chapter=11, date="2025", place="{city}", music="tension",
+    chapter=11, date="2025", place="{city}", photo=["drone_moscow", "winter_city"], music="tension",
     text=(
         "Война приходит домой. Беспилотники над Москвой и над нефтезаводами по всей "
         "стране, аэропорты закрываются на часы — «ковёр». Новости о горящих НПЗ "
@@ -1184,11 +1193,11 @@ NODES = {
     ),
     source="Массированные атаки беспилотников на территорию России, закрытия аэропортов "
            "и региональные отключения мобильного интернета в 2024–2025 годах.",
-    choices=[("Дальше", lambda s: "c12_collapse" if s.data["left"] else "c11_duma", None)],
+    choices=[("Дальше", lambda s: "c12_collapse" if s.data["left"] else "c11_fuel", None)],
 ),
 
 "c11_kitay": dict(
-    chapter=11, date="7 ноября 2026, 19:15", place="Москва, Китай-город", music="tension",
+    chapter=11, date="7 ноября 2026, 19:15", place="Москва, Китай-город", photo=["chistye_prudy", "omon"], music="tension",
     text={
         "default": (
             "Видео из Москвы. Субботний вечер, парк «Горка» в Большом Спасоглинищевском "
@@ -1229,7 +1238,7 @@ NODES = {
         ({"default": "Скинуть родителям задержанных контакты адвокатов ОВД-Инфо.",
           "teacher": "Отказаться составлять список.",
           "student": "Написать в общий чат всё, что ты об этом думаешь."},
-         lambda s: "p_guilt2" if s.data["voice"] <= 3 else "c12_collapse", both(voice(2), risky(1))),
+         lambda s: "p_guilt2" if s.data["voice"] <= 3 else "c12_collapse", both(voice(2), risky(1), flag("helped_teens"))),
         ({"default": "Пролистать. Своих проблем хватает.",
           "teacher": "Составить список. Не всех. Только тех, кого и так знают.",
           "student": "Выйти из чата."},
@@ -1237,8 +1246,27 @@ NODES = {
     ],
 ),
 
+"c11_fuel": dict(
+    chapter=11, date="Весна — лето 2026", place="{city}", music="tension", photo="gas_station",
+    text=(
+        "Беспилотники бьют по нефтезаводам каждую неделю. На заправках — ограничения: "
+        "столько-то литров в одни руки, а в Крыму бензина нет совсем. Цены ползут вверх, "
+        "самолёты задерживаются, губернаторов меняют одного за другим.\n\n"
+        "На 9 мая с парада убирают технику. Летом очередная атака на Москву — сирены "
+        "молчат, люди узнают о ней из Telegram. Кажется, что страна держится только "
+        "на привычке."
+    ),
+    source="Удары по НПЗ и ограничения продажи топлива, дефицит бензина в Крыму, "
+           "парад 9 мая 2026 года без военной техники, атака беспилотников на Москву "
+           "летом 2026 года — по новостным разборам весны и лета 2026 года.",
+    choices=[
+        ("Это начало конца. Пора готовиться к тому, что будет после.", "c11_duma", voice(1)),
+        ("Главное — пережить. Запасти бензин, гречку и не высовываться.", "c11_duma", None),
+    ],
+),
+
 "p_guilt2": dict(
-    chapter=11, date="Ноябрь 2026", place="{city}", music="grief", pressure=True,
+    chapter=11, date="Ноябрь 2026", place="{city}", photo="winter_city", music="grief", pressure=True,
     text=(
         "Ты встречаешь маму Марины в магазине. Она постарела лет на десять. Марине дали "
         "три года за донат. «Она про тебя часто спрашивала, — говорит она. — "
@@ -1246,7 +1274,7 @@ NODES = {
         "Она говорит это без упрёка. От этого только хуже."
     ),
     choices=[
-        ("Начать писать Марине в колонию. Каждую неделю.", "c12_collapse", voice(2)),
+        ("Начать писать Марине в колонию. Каждую неделю.", "c12_collapse", both(voice(2), flag("marina_friend"), flag("letters"))),
         ("Кивнуть и уйти.", "c12_collapse", None),
     ],
 ),
@@ -1264,7 +1292,7 @@ NODES = {
     source="Выборы в Государственную думу, сентябрь 2026 года. Рост поддержки «Яблока» "
            "и ход кампании здесь — художественное допущение.",
     choices=[
-        ("Агитировать за «Яблоко» у метро.", "c11_kitay", both(voice(2), risky(1))),
+        ("Агитировать за «Яблоко» у метро.", "c11_kitay", both(voice(2), risky(1), flag("campaigned"))),
         ("Пойти наблюдателем.", "c11_kitay", voice(1)),
         ("Проголосовать и не высовываться.", "c11_kitay", None),
     ],
@@ -1286,7 +1314,7 @@ NODES = {
 ),
 
 "c12_freed": dict(
-    chapter=12, date="Июнь 2027", place="ворота колонии", music="ambient",
+    chapter=12, date="Июнь 2027", place="ворота колонии", photo="penal_colony", music="ambient",
     text=(
         "Амнистия для политзаключённых. Ворота колонии открываются, и ты не сразу "
         "понимаешь, что можно идти.\n\n"
@@ -1297,16 +1325,16 @@ NODES = {
 ),
 
 "c12_choice": dict(
-    chapter=12, date="2028–2029", place="{city}", music="ambient",
+    chapter=12, date="2028–2029", place="{city}", photo=["kremlin", "polling"], music="ambient",
     text=(
         "Переходный период — тяжёлый, грязный, полный ошибок. Новые люди, старые "
         "привычки. Кто-то уже требует «сильную руку». Кто-то хочет мстить.\n\n"
         "Назначены первые за тридцать лет честные выборы. Что ты будешь делать?"
     ),
     choices=[
-        ("Идти в кандидаты муниципальных депутатов.", "FINALE", voice(2)),
-        ("Работать наблюдателем — чтобы никто больше не украл ни одного голоса.", "FINALE", voice(1)),
-        ("Просто прийти и проголосовать. Этого достаточно.", "FINALE", None),
+        ("Идти в кандидаты муниципальных депутатов.", "FINALE", both(voice(2), flag("role", "candidate"))),
+        ("Работать наблюдателем — чтобы никто больше не украл ни одного голоса.", "FINALE", both(voice(1), flag("role", "observer"))),
+        ("Просто прийти и проголосовать. Этого достаточно.", "FINALE", flag("role", "voter")),
     ],
 ),
 
@@ -1322,10 +1350,14 @@ def compute_ending(state) -> str:
     v = d["voice"]
     if d["betrayed"] and d["arrested"] and d["risk"] >= 9:
         return "tragic"
+    if d["talked"] and not d["arrested"] and v < 8:
+        return "informer"
     if d["arrested"]:
         return "win_prison"
     if d["left"]:
         return "win_return" if (d["org"] == "diaspora" and v >= 6) else "emigration"
+    if d["org"] == "kprf" and not d["refused_kprf"] and v < 9:
+        return "system"
     if v >= 9 or (v >= 6 and d["org"] is not None):
         return "win"
     return "quiet"
@@ -1386,6 +1418,126 @@ ENDINGS = {
         ),
     ),
 }
+
+ENDINGS["informer"] = dict(
+    headline="АРХИВ", sub="Твоя фамилия нашлась в протоколах", music="grief", photo="lubyanka",
+    credits=False,
+    note=(
+        "Когда открыли архивы, журналисты выложили протоколы «профилактических бесед». "
+        "Среди них — твоя, апрель 2022-го: имена, адреса, кто с кем встречался. "
+        "Марина прочитала её первой. {name} никого не [[убил|убила]] и никого не "
+        "[[посадил|посадила]] — просто [[испугался|испугалась]]. Но свобода пришла, "
+        "а смотреть людям в глаза ты так и не научил[[ся|ась]]."
+    ),
+)
+
+ENDINGS["system"] = dict(
+    headline="СИСТЕМА", sub="Новая страна, старая партия", music="grief", photo="kremlin",
+    credits=False,
+    note=(
+        "КПРФ успела вовремя перекраситься. {name} — депутат, мандат, кабинет. "
+        "Ты голосуешь за правильные законы и говоришь правильные слова. Только на "
+        "митингах 2027-го тебя не было, и все это помнят."
+    ),
+)
+
+
+def _ep_dima(s):
+    d = s.data
+    if d["saved_dima"] is False:
+        return ("Дима не вернулся. Его имя выбито на новом мемориале — среди тех, кого "
+                "отправили на войну, которую они не выбирали.")
+    if d["dima_abroad"]:
+        return "Дима остался в Тбилиси, женился, присылает фото дочки. Домой пока не торопится."
+    if d["saved_dima"]:
+        return "Дима так и не надел форму. Он до сих пор хранит ту отозванную повестку."
+    return None
+
+
+def _ep_marina(s):
+    d = s.data
+    if d["betrayed"]:
+        return ("Марина дала показания, когда пригрозили её сыну. В 2028-м она пришла к тебе "
+                "и долго стояла у двери. [[Ты открыл.|Ты открыла.]] Вы молчали час.")
+    if d["marina_friend"]:
+        return "Марина вышла по амнистии. Вы созваниваетесь каждое воскресенье."
+    if d["ashamed"]:
+        return "С Мариной вы так и не поговорили о той ночи в январе 2021-го."
+    return "Марина уехала в Ригу. Иногда лайкает твои посты."
+
+
+def _ep_mom(s):
+    d = s.data
+    if d["saved_dima"] is False:
+        return "Мама каждый май ездит на кладбище. Телевизор она больше не включает."
+    if d["mom_argued"] and not d["promised_mom"]:
+        return "Однажды мама позвонила и сказала: «Ты [[был прав|была права]]». Больше ничего."
+    if d["promised_mom"]:
+        return "Мама так и не узнала, сдержал[[|а]] ли ты обещание. Вы не говорите о политике."
+    return "Мама до сих пор верит, что всё было не так однозначно."
+
+
+def _ep_work(s):
+    d = s.data
+    prof = s.profession
+    if d["letter"] == "refused":
+        return {"student": "В 2028-м тебя восстановили в университете — с извинениями ректора.",
+                "teacher": "Ты [[вернулся|вернулась]] в школу. Девочка с третьей парты теперь учит историю сама.",
+                "journalist": "Твоя редакция вернулась из Риги. Первый номер вышел со словом «война» на обложке.",
+                }.get(prof, "Тот отказ подписать письмо потом показали в документальном фильме.")
+    if d["letter"] == "leaked":
+        return "Журналисты нашли тебя через годы: тот слив стал частью большого расследования."
+    if d["letter"] == "signed":
+        return "Твою подпись под тем письмом нашли в архиве. Ты никому про неё не рассказывал[[|а]]."
+    return None
+
+
+def _ep_org(s):
+    d = s.data
+    return {
+        "fbk": "Донаты, которые ты переводил[[|а]] в 2021-м, стали твоим уголовным делом — и твоей гордостью.",
+        "yabloko": ("В 2029-м ты [[избрался|избралась]] в городскую думу от «Яблока»."
+                    if d["member"] else "«Яблоко» прошло в новый парламент. Ты помогал[[|а]] им без партбилета."),
+        "kprf": "Ты [[ушёл|ушла]] из КПРФ, когда партия начала перекрашиваться.",
+        "vesna": "Ребята из «Весны» открыли музей листовок. Твоя — в третьей витрине.",
+        "ovd": "Ты [[стал|стала]] юристом и теперь добиваешься реабилитации политзаключённых.",
+        "diaspora": "Из эмиграции вернулись тысячи. Ты [[помог|помогла]] им найти работу и жильё.",
+    }.get(d["org"], "Ты так ни к кому и не [[примкнул|примкнула]]. Иногда жалеешь.")
+
+
+def _ep_small(s):
+    d = s.data
+    if d["helped_teens"]:
+        return "Одна из девочек с Китай-города написала тебе через год: «Спасибо за адвоката»."
+    if d["price_tag"]:
+        return "Твой ценник кто-то сфотографировал. Сейчас он висит в музее рядом с работами Саши Скочиленко."
+    if d["filmed"]:
+        return "Твоё видео с площади в январе 2021-го показали на суде над тем омоновцем."
+    if d["letters"]:
+        return "Политзаключённые, которым ты писал[[|а]], собрали твои письма и вернули тебе пачкой."
+    return None
+
+
+def _ep_role(s):
+    return {
+        "candidate": "В 2029-м ты [[стал|стала]] муниципальным депутатом. Первым делом — сквер на месте отдела полиции.",
+        "observer": "На первых честных выборах ты [[просидел|просидела]] на участке три дня. Не украли ни одного голоса.",
+        "voter": "На первых честных выборах ты [[пришёл|пришла]] в полдень. По привычке.",
+    }.get(s.data["role"])
+
+
+EPILOGUE = [_ep_dima, _ep_marina, _ep_mom, _ep_work, _ep_org, _ep_small, _ep_role]
+
+
+def epilogue(state) -> list[str]:
+    """What became of everyone, line by line, from the choices made."""
+    lines = []
+    for fn in EPILOGUE:
+        line = fn(state)
+        if isinstance(line, str):
+            lines.append(state.format(line))
+    return lines
+
 
 COUNTRY_CARD = {
     "year": "2030",

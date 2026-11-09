@@ -1,26 +1,122 @@
 {
+  "antiwar_2022": {
+    "title": "Arrests at an anti-war protest in Moscow (24 February 2022, Tverskaya street).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Arrests_at_an_anti-war_protest_in_Moscow_(24_February_2022,_Tverskaya_street).jpg",
+    "license": "CC0",
+    "artist": "Okeanium",
+    "date": "2022-02-24",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
+  "kara_murza": {
+    "title": "Vladimir V. Kara-Murza (2017).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Vladimir_V._Kara-Murza_(2017).jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Jindřich Nosek (NoJin)",
+    "date": "2017-06-09",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
+  "kremlin": {
+    "title": "Kremlin wall - Red Square.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Kremlin_wall_-_Red_Square.jpg",
+    "license": "CC BY 4.0",
+    "artist": "Юрий Д.К.",
+    "date": "Taken on 1",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
+  "kremlin_night": {
+    "title": "1964 Hammond Slides Church.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:1964_Hammond_Slides_Church.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Thomas Taylor Hammond (1920-1993)",
+    "date": "Taken in 1",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
+  "navalnaya": {
+    "title": "Rally-concert in support of Alexey Navalny 2013-09-06 4567 Yulia Navalnaya.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Rally-concert_in_support_of_Alexey_Navalny_2013-09-06_4567_Yulia_Navalnaya.jpg",
+    "license": "CC BY 3.0",
+    "artist": "putnik",
+    "date": "2013-09-06",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
+  "navalny": {
+    "title": "Alexey Navalny 20 Feb 2021 by Evgeny Feldman.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Alexey_Navalny_20_Feb_2021_by_Evgeny_Feldman.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Evgeny Feldman",
+    "date": "2021-02-20",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
+  "navalny_funeral": {
+    "title": "Funeral of Alexei Navalny March 1st 2024.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Funeral_of_Alexei_Navalny_March_1st_2024.jpg",
+    "license": "CC BY 4.0",
+    "artist": "Акутагава",
+    "date": "2024-03-01",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
+  "navalny_memorial": {
+    "title": "Navalny makeshift memorial, Warsaw.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Navalny_makeshift_memorial,_Warsaw.jpg",
+    "license": "CC0",
+    "artist": "User:Brandmeister (Togrul Safarov)",
+    "date": "2024-02-18",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
+  "navalny_portrait": {
+    "title": "Alexey Navalny.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Alexey_Navalny.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Mitya Aleshkovskiy",
+    "date": "2011-10-22",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
+  "navalny_rally": {
+    "title": "Yulia Navalny, Alexey Navalny and Ilya Yashin at Moscow rally 2013-06-12 2.JPG",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Yulia_Navalny,_Alexey_Navalny_and_Ilya_Yashin_at_Moscow_rally_2013-06-12_2.JPG",
+    "license": "CC BY-SA 3.0",
+    "artist": "Bogomolov.PL",
+    "date": "2013-06-12",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
   "nemtsov": {
     "title": "Boris Nemtsov 2014.jpg",
     "source_url": "https://commons.wikimedia.org/wiki/File:Boris_Nemtsov_2014.jpg",
     "license": "CC BY-SA 3.0",
-    "artist": "Michael Jarmoluk",
-    "date": "2014",
-    "note": "Monochrome, dimmed, cropped derivative for in-game background use. Identity and content unaltered."
+    "artist": "Dhārmikatva",
+    "date": "Taken on 1",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
+  "nemtsov_bridge": {
+    "title": "There are flowers and candles near the site of the murder of Boris Nemtsov.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:There_are_flowers_and_candles_near_the_site_of_the_murder_of_Boris_Nemtsov.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Dhārmikatva",
+    "date": "2015-02-28",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
+  "politkovskaya": {
+    "title": "Anna Politkovskaja im Gespräch mit Christhard Läpple.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Anna_Politkovskaja_im_Gespr%C3%A4ch_mit_Christhard_L%C3%A4pple.jpg",
+    "license": "CC BY 2.0",
+    "artist": "Blaues Sofa",
+    "date": "2005-03-17",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
   },
   "yashin": {
-    "title": "Ilya Yashin in 2019 (cropped).png",
-    "source_url": "https://commons.wikimedia.org/wiki/File:Ilya_Yashin_in_2019_(cropped).png",
+    "title": "Ilya Yashin in 2019.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Ilya_Yashin_in_2019.jpg",
     "license": "CC BY-SA 4.0",
     "artist": "Evgeny Feldman",
-    "date": "2019",
-    "note": "Monochrome, dimmed, cropped derivative for in-game background use. Identity and content unaltered."
+    "date": "2019-07-15",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
   },
-  "navalny": {
-    "title": "Alexey Navalny.jpg",
-    "source_url": "https://commons.wikimedia.org/wiki/File:Alexey_Navalny.jpg",
-    "license": "CC BY-SA 4.0",
-    "artist": "Evgeny Feldman / Novaya Gazeta",
-    "date": "2017",
-    "note": "Monochrome, dimmed, cropped derivative for in-game background use. Identity and content unaltered."
+  "yavlinsky": {
+    "title": "Grigory Yavlinsky. 2018.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Grigory_Yavlinsky._2018.jpg",
+    "license": "CC BY 4.0",
+    "artist": "Press office of Yabloko party",
+    "date": "2018-02-22",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
   }
 }

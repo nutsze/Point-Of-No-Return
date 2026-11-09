@@ -15,8 +15,9 @@ import sys
 import pygame
 
 from engine import state as state_mod
-from engine.story import (CHAPTERS, CITIES, COUNTRY_CARD, DEDICATION, ENDINGS, NODES, ORGS,
-                          PEOPLE, PROFESSIONS, START_NODE, compute_ending)
+from engine.story import (CHAPTER_PHOTOS, CHAPTERS, CITIES, COUNTRY_CARD, DEDICATION, ENDINGS,
+                          FALLBACK_PHOTOS, NODES, ORGS, PEOPLE, PROFESSIONS, START_NODE,
+                          compute_ending, epilogue)
 
 
 def resource_root() -> str:
@@ -287,6 +288,7 @@ class App:
         self.reveal = 0.0
         self.text_cache_key = None
         self.lay: dict = {}
+        self.page = 0
         self.chapter_shown = 0
         self.card_t = 0.0
         self.fade = 1.0
@@ -373,7 +375,7 @@ class App:
         elif self.mode == "story":
             self.node_t += dt
             self.reveal += dt * TYPE_SPEED
-        elif self.mode == "ending":
+        elif self.mode in ("ending", "epilogue"):
             self.credits_t += dt
 
     def transition(self, action):
@@ -387,6 +389,7 @@ class App:
         if mode == "story":
             self.node_t = 0.0
             self.reveal = 0.0
+            self.page = 0
             self.text_cache_key = None
             node = NODES[self.state.node]
             self.audio.play(node.get("music", "ambient"))
@@ -411,7 +414,7 @@ class App:
                 self.audio.toggle_mute()
                 return
             if event.key == pygame.K_ESCAPE:
-                if self.mode in ("story", "chapter", "ending", "dossier"):
+                if self.mode in ("story", "chapter", "ending", "epilogue", "dossier"):
                     self.paused = not self.paused
                     self.focus = 0
                 elif self.mode == "create":
@@ -458,10 +461,15 @@ class App:
         if self.mode == "chapter":
             self.transition(lambda: self.set_mode("story"))
             return True
-        if self.mode == "story" and self.reveal < self.total_chars():
-            self.reveal = 1e9
-            return True
-        if self.mode == "ending" and self.credits_t < 30:
+        if self.mode == "story":
+            if self.reveal < self.page_chars():
+                self.reveal = 1e9
+                return True
+            if not self.on_last_page():
+                self.page += 1
+                self.reveal = 0.0
+                return True
+        if self.mode in ("ending", "epilogue") and self.credits_t < 30:
             self.credits_t = 999
             return True
         return False
@@ -548,7 +556,8 @@ class App:
         self.buttons = []
         self.screen.fill(INK)
         {"menu": self.draw_menu, "create": self.draw_create, "chapter": self.draw_chapter,
-         "story": self.draw_story, "ending": self.draw_ending, "dossier": self.draw_dossier}[self.mode](dt)
+         "story": self.draw_story, "ending": self.draw_ending, "epilogue": self.draw_epilogue,
+         "dossier": self.draw_dossier}[self.mode](dt)
         if self.paused:
             self.buttons = []
             self.draw_pause()
@@ -562,7 +571,8 @@ class App:
 
     # ------------------------------------------------------- primitives --
 
-    def background(self, key: str | None, dt: float, darkness: int = 150, snow: float = 1.0):
+    def background(self, key: str | None, dt: float, darkness: int = 150, snow: float = 1.0,
+                   caption: bool = True):
         w, h = self.screen.get_size()
         img = self.photos.cover(key, (w, h)) if self.photos.has(key) else None
         if img:
@@ -574,7 +584,7 @@ class App:
             self.screen.blit(self.veil(INK, darkness), (0, 0))
         self.fx.snow(self.screen, dt, self.t, snow)
         self.fx.overlay(self.screen, self.t)
-        if img:
+        if img and caption:
             cap = self.photos.caption(key)
             if cap:
                 f = self.fonts.get("mono", self.px(15))
@@ -705,7 +715,7 @@ class App:
         node = NODES[self.state.node]
         num = node["chapter"]
         title, when = CHAPTERS[num]
-        self.background(node.get("photo"), dt, darkness=215, snow=1.2)
+        self.background(self.scene_photo(node), dt, darkness=215, snow=1.2)
         a = ease(min(self.card_t / 0.8, 1.0, (CHAPTER_CARD_TIME - self.card_t) / 0.6 + 0.2))
         alpha = int(255 * a)
         cy = h // 2
@@ -715,134 +725,177 @@ class App:
 
     # ------------------------------------------------------------- story --
 
-    def layout(self):
-        """Wrap the node's text once per node/size, shrinking type until it fits."""
-        node = NODES[self.state.node]
+    def scene_photo(self, node) -> str | None:
+        """The node's own photo if present, else the chapter's, else any fallback."""
+        wanted = self.state.pick(node.get("photo"))
+        if isinstance(wanted, str):
+            wanted = [wanted]
+        for key in list(wanted or []) + CHAPTER_PHOTOS.get(node["chapter"], []) + FALLBACK_PHOTOS:
+            if self.photos.has(key):
+                return key
+        return None
+
+    def panel_rect(self) -> pygame.Rect:
         w, h = self.screen.get_size()
-        key = (self.state.node, (w, h))
+        m = self.margin()
+        top = int(h * 0.585)
+        return pygame.Rect(m, top, w - 2 * m, h - top - self.px(34))
+
+    def layout(self):
+        """Split the node's text into pages that fit the text panel."""
+        node = NODES[self.state.node]
+        key = (self.state.node, self.screen.get_size())
         if key == self.text_cache_key:
             return self.lay
         self.text_cache_key = key
-        col = min(self.px(1180), w - 2 * self.margin())
-        body = self.state.format(node["text"])
+        panel = self.panel_rect()
+        pad = self.px(40)
+        inner_w = panel.w - 2 * pad
+        inner_h = panel.h - 2 * pad - self.px(10)
+        bf = self.fonts.get("serif", self.px(31))
+        lh = int(bf.get_linesize() * 1.25)
+        per_page = max(2, inner_h // lh)
+        lines = []
+        for para in self.state.format(node["text"]).split("\n\n"):
+            if lines:
+                lines.append("")
+            lines.extend(wrap(bf, para.replace("\n", " "), inner_w))
+        pages = []
+        while lines:
+            chunk = lines[:per_page]
+            while chunk and chunk[-1] == "":
+                chunk.pop()
+            pages.append({"kind": "body", "lines": chunk})
+            lines = lines[per_page:]
+            while lines and lines[0] == "":
+                lines.pop(0)
         q = node.get("quote")
-        for k in (1.0, 0.92, 0.84, 0.76, 0.68, 0.6):
-            bf = self.fonts.get("serif", self.px(31 * k))
-            qf = self.fonts.get("serif_i", self.px(36 * k))
-            cf = self.fonts.get("serif", self.px(28 * k))
-            mf = self.fonts.get("mono", self.px(17 * k))
-            lay = {"k": k, "col": col}
-            lay["body"] = wrap(bf, body, col)
-            lay["lh"] = int(bf.get_linesize() * 1.22)
-            hgt = self.px(225) + sum(lay["lh"] if l else lay["lh"] // 2 for l in lay["body"])
-            if q:
-                lay["quote"] = wrap(qf, f"«{q['text']}»", col - self.px(40))
-                lay["qsrc"] = wrap(mf, q["source"], col - self.px(40))
-                hgt += self.px(16) + len(lay["quote"]) * int(qf.get_linesize() * 1.15)
-                hgt += self.px(42) + len(lay["qsrc"]) * self.px(24 * k)
-            src = node.get("source")
-            lay["src"] = wrap(mf, "ИСТОЧНИК: " + src, col) if src else []
-            hgt += self.px(18) + len(lay["src"]) * self.px(25 * k)
-            lay["choices"] = []
-            for label, nxt, fx in node["choices"]:
-                lines = wrap(cf, self.state.format(label), col - self.px(110))[:2]
-                rh = self.px(68 if len(lines) == 1 else 98) if k > 0.8 else self.px(58 if len(lines) == 1 else 86)
-                lay["choices"].append((lines, rh, nxt, fx))
-            hgt += self.px(30) + sum(rh + self.px(12) for _, rh, _, _ in lay["choices"]) + self.px(60)
-            if hgt <= h:
-                break
-        self.lay = lay
-        return lay
+        if q:
+            qf = self.fonts.get("serif_i", self.px(38))
+            pages.append({"kind": "quote", "lines": wrap(qf, f"«{q['text']}»", inner_w - self.px(40)),
+                          "who": q["who"], "src": q["source"]})
+        cf = self.fonts.get("serif", self.px(27))
+        cw = min(self.px(1150), panel.w)
+        choices = []
+        for label, nxt, fx in node["choices"]:
+            cl = wrap(cf, self.state.format(label), cw - self.px(110))[:2]
+            choices.append((cl, self.px(62 if len(cl) == 1 else 90), nxt, fx))
+        self.lay = {"pages": pages, "lh": lh, "pad": pad, "choices": choices, "cw": cw}
+        return self.lay
+
+    def page_chars(self) -> int:
+        page = self.layout()["pages"][self.page]
+        return sum(len(l) for l in page["lines"])
 
     def total_chars(self) -> int:
-        lay = self.layout()
-        return sum(len(l) for l in lay["body"]) + sum(len(l) for l in lay.get("quote", []))
+        return self.page_chars()
+
+    def on_last_page(self) -> bool:
+        return self.page >= len(self.layout()["pages"]) - 1
 
     def draw_story(self, dt):
         w, h = self.screen.get_size()
         node = NODES[self.state.node]
-        photo = node.get("photo")
-        has_photo = self.photos.has(photo)
-        self.background(photo, dt, darkness=150 if has_photo else 0, snow=0.7)
-        if has_photo:
-            self.screen.blit(self.fx.bottom, (0, 0))
+        photo = self.scene_photo(node)
+        self.background(photo, dt, darkness=105, snow=0.6, caption=False)
+        self.screen.blit(self.fx.bottom, (0, 0))
         lay = self.layout()
-        k, col = lay["k"], lay["col"]
         m = self.margin()
 
-        # header
-        y = self.px(70)
+        # header over the photo
+        y = self.px(54)
         chap = f"ГЛАВА {node['chapter']} · {CHAPTERS[node['chapter']][0].upper()}"
-        self.text("mono", 19, chap, DIM, (m, y))
-        y += self.px(34)
-        self.text("display_md", 34, self.state.format(node["date"]).upper(), RED, (m, y))
-        r = self.text("serif_i", 26, self.state.format(node["place"]), MUTED, (m, y + self.px(48)))
-        y = r.bottom + self.px(36)
+        self.text("mono", 19, chap, PAPER, (m, y))
+        y += self.px(32)
+        self.text("display", 46, self.state.format(node["date"]).upper(), WHITE, (m, y))
+        self.text("serif_i", 26, self.state.format(node["place"]), PAPER, (m, y + self.px(62)))
+        if node.get("pressure"):
+            pulse = 0.5 + 0.5 * math.sin(self.t * 4)
+            r = self.text("mono", 18, "ДАВЛЕНИЕ", RED, (w - m, self.px(58)), anchor="topright",
+                          alpha=int(140 + 115 * pulse))
+            pygame.draw.circle(self.screen, RED, (r.left - self.px(16), r.centery), self.px(6))
 
-        # body, typed out
-        bf = self.fonts.get("serif", self.px(31 * k))
+        # text panel
+        panel = self.panel_rect()
+        surf = pygame.Surface(panel.size, pygame.SRCALPHA)
+        surf.fill((9, 10, 12, 228))
+        self.screen.blit(surf, panel)
+        pygame.draw.rect(self.screen, RED, (panel.x, panel.y, panel.w, self.px(3)))
+        cap = self.photos.caption(photo) if photo else None
+        if cap:
+            self.text("mono", 14, cap, MUTED, (panel.right, h - self.px(8)), anchor="bottomright")
+        page = lay["pages"][self.page]
+        x = panel.x + lay["pad"]
+        y = panel.y + lay["pad"]
         budget = self.reveal
-        for line in lay["body"]:
-            if budget <= 0:
-                break
-            shown = line[: int(budget)]
-            budget -= len(line)
-            if shown:
-                self.screen.blit(bf.render(shown, True, PAPER), (m, y))
-            y += lay["lh"] if line else lay["lh"] // 2
-
-        # quote: real words of a real person
-        q = node.get("quote")
-        if q and budget > 0:
-            y += self.px(16)
-            qf = self.fonts.get("serif_i", self.px(36 * k))
-            top = y
-            for line in lay["quote"]:
-                shown = line[: int(budget)]
+        if page["kind"] == "body":
+            bf = self.fonts.get("serif", self.px(31))
+            for line in page["lines"]:
+                shown = line[: max(0, int(budget))]
                 budget -= len(line)
                 if shown:
-                    self.screen.blit(qf.render(shown, True, WHITE), (m + self.px(36), y))
+                    self.screen.blit(bf.render(shown, True, PAPER), (x, y))
+                y += lay["lh"] if line else lay["lh"] // 2
+        else:
+            qf = self.fonts.get("serif_i", self.px(38))
+            top = y
+            for line in page["lines"]:
+                shown = line[: max(0, int(budget))]
+                budget -= len(line)
+                if shown:
+                    self.screen.blit(qf.render(shown, True, WHITE), (x + self.px(36), y))
                 y += int(qf.get_linesize() * 1.15)
-            pygame.draw.rect(self.screen, RED, (m, top + self.px(6), self.px(5), y - top - self.px(6)))
+            pygame.draw.rect(self.screen, RED, (x, top + self.px(6), self.px(5), y - top - self.px(6)))
             if budget > 0:
-                y += self.px(8)
-                self.text("display_md", 22, "— " + q["who"].upper(), PAPER, (m + self.px(36), y))
-                y += self.px(34)
-                for line in lay["qsrc"]:
-                    self.text("mono", 17 * k, line, DIM, (m + self.px(36), y))
-                    y += self.px(24 * k)
+                y += self.px(10)
+                self.text("display_md", 24, "— " + page["who"].upper(), PAPER, (x + self.px(36), y))
+                self.text("mono", 16, page["src"], MUTED, (x + self.px(36), y + self.px(36)))
 
-        done = self.reveal >= self.total_chars()
+        done = self.reveal >= self.page_chars()
         if not done:
-            self.text("mono", 16, "клик / пробел — показать текст целиком", DIM, (m, h - self.px(50)))
             return
-        if lay["src"]:
-            y += self.px(18)
-            for line in lay["src"]:
-                self.text("mono", 17 * k, line, DIM, (m, y))
-                y += self.px(25 * k)
+        if not self.on_last_page():
+            if int(self.t * 2) % 2 == 0:
+                bx, by = panel.right - self.px(40), panel.bottom - self.px(34)
+                pygame.draw.polygon(self.screen, RED, [(bx - self.px(12), by - self.px(8)),
+                                                       (bx + self.px(12), by - self.px(8)), (bx, by + self.px(6))])
+            self.text("mono", 15, "клик / пробел — дальше", DIM,
+                      (panel.right - self.px(70), panel.bottom - self.px(42)), anchor="topright")
+            return
 
-        # choices
+        # source, quietly, above the panel
+        if node.get("source"):
+            sf = self.fonts.get("mono", self.px(16))
+            sy = panel.y - self.px(14)
+            for line in reversed(wrap(sf, "ИСТОЧНИК: " + node["source"], panel.w)):
+                r = self.text("mono", 16, line, PAPER, (panel.x, sy), anchor="bottomleft")
+                sy = r.top - self.px(2)
+            src_top = sy
+        else:
+            src_top = panel.y - self.px(14)
+
+        # choices float above the panel, centred
         gap = self.px(12)
         total = sum(rh + gap for _, rh, _, _ in lay["choices"])
-        by = max(y + self.px(30), h - self.px(60) - total)
-        appear = ease(min(1.0, (self.reveal - self.total_chars()) / TYPE_SPEED / 0.4 + 0.2))
-        cf = self.fonts.get("serif", self.px(28 * k))
+        by = src_top - self.px(18) - total
+        cw = lay["cw"]
+        cx = w // 2 - cw // 2
+        cf = self.fonts.get("serif", self.px(27))
+        appear = ease(min(1.0, (self.reveal - self.page_chars()) / TYPE_SPEED / 0.35 + 0.15))
         for i, (lines, rh, nxt, fx) in enumerate(lay["choices"]):
-            rect = pygame.Rect(m, by, col, rh)
+            rect = pygame.Rect(cx, by, cw, rh)
             focused = i == self.focus
-            surf = pygame.Surface(rect.size, pygame.SRCALPHA)
-            surf.fill((40, 41, 46, 235) if focused else (18, 19, 22, 215))
-            surf.set_alpha(int(255 * appear))
-            self.screen.blit(surf, rect)
-            pygame.draw.rect(self.screen, RED if focused else RED_DARK,
-                             (rect.x, rect.y, self.px(6) if focused else self.px(3), rect.h))
-            self.text("display", 28, str(i + 1), RED if focused else DIM,
+            box = pygame.Surface(rect.size, pygame.SRCALPHA)
+            box.fill((44, 22, 22, 240) if focused else (12, 13, 16, 230))
+            box.set_alpha(int(255 * appear))
+            self.screen.blit(box, rect)
+            pygame.draw.rect(self.screen, RED if focused else (70, 70, 76), rect, width=self.px(2) if focused else 1)
+            self.text("display", 28, str(i + 1), RED if focused else MUTED,
                       (rect.x + self.px(34), rect.centery), anchor="midleft")
             lh = cf.get_linesize()
             ty = rect.centery - lh * len(lines) // 2
             for line in lines:
-                self.screen.blit(cf.render(line, True, WHITE if focused else PAPER), (rect.x + self.px(80), ty))
+                self.screen.blit(cf.render(line, True, WHITE), (rect.x + self.px(80), ty))
                 ty += lh
             self.buttons.append(Button(rect, (lambda n=nxt, f=fx: self.choose(n, f)), lines[0], "choice"))
             by += rh + gap
@@ -873,7 +926,9 @@ class App:
             self.screen.blit(surf, surf.get_rect(midtop=(w // 2, y)))
             y += int(f.get_linesize() * 1.25)
         if self.credits_t > 3.0:
-            self.end_buttons(y + self.px(60))
+            bw, bh = self.px(420), self.px(64)
+            self.button(pygame.Rect(w // 2 - bw // 2, y + self.px(50), bw, bh), "ЧТО БЫЛО ДАЛЬШЕ",
+                        self.open_epilogue, primary=True)
 
     def end_buttons(self, y):
         w = self.screen.get_width()
@@ -984,19 +1039,55 @@ class App:
             for line in wrap(note_f, self.state.format(e["note"]), area.w - self.px(20))[:4]:
                 self.text("serif_i", 26, line, PAPER, (area.x + self.px(10), ny))
                 ny += int(note_f.get_linesize() * 1.15)
-            bw, bh = self.px(250), self.px(56)
+            bw, bh = self.px(380), self.px(56)
             by = area.bottom - bh
-            self.button(pygame.Rect(area.x + self.px(10), by, bw, bh), "ЗАНОВО", self.new_game, primary=True, size=22)
-            self.button(pygame.Rect(area.x + self.px(10) + bw + self.px(14), by, bw, bh), "КТО ЭТИ ЛЮДИ",
-                        lambda: self.transition(lambda: self.set_mode("dossier")), size=22)
-            self.button(pygame.Rect(area.x + self.px(10) + 2 * (bw + self.px(14)), by, bw, bh), "В МЕНЮ",
-                        self.to_menu, size=22)
+            self.button(pygame.Rect(area.x + self.px(10), by, bw, bh), "ЧТО БЫЛО ДАЛЬШЕ",
+                        self.open_epilogue, primary=True, size=22)
         else:
             self.text("mono", 16, "пробел — пропустить титры", DIM, (w - m, h - self.px(40)), anchor="topright")
 
         self.text("mono", 15, "Будущее после 2026 года в игре вымышлено. Люди в списке — реальные; "
                   "список — дань уважения и не означает их участия в игре.",
                   DIM, (m, h - self.px(40)))
+
+    # ---------------------------------------------------------- epilogue --
+
+    def open_epilogue(self):
+        def go():
+            self.mode = "epilogue"
+            self.focus = 0
+            self.credits_t = 0.0
+            self.epilogue_lines = epilogue(self.state)
+        self.transition(go)
+
+    def draw_epilogue(self, dt):
+        w, h = self.screen.get_size()
+        e = ENDINGS[self.ending]
+        self.background(e.get("photo"), dt, darkness=200, snow=1.0)
+        m = self.margin()
+        col = min(self.px(1200), w - 2 * m)
+        x = w // 2 - col // 2
+        y = self.px(90)
+        self.text("mono", 20, e["headline"] + " · 2030", RED, (x, y))
+        y += self.px(34)
+        self.text("display", 76, "ЧТО БЫЛО ДАЛЬШЕ", WHITE, (x, y))
+        y += self.px(130)
+        f = self.fonts.get("serif", self.px(29))
+        lh = int(f.get_linesize() * 1.2)
+        lines = getattr(self, "epilogue_lines", [])
+        for i, line in enumerate(lines):
+            a = ease((self.credits_t - 0.6 - i * 0.9) / 0.8)
+            if a <= 0:
+                break
+            pygame.draw.rect(self.screen, RED, (x, y + self.px(14), self.px(14), self.px(3)))
+            for part in wrap(f, line, col - self.px(40)):
+                surf = f.render(part, True, PAPER)
+                surf.set_alpha(int(255 * a))
+                self.screen.blit(surf, (x + self.px(36), y))
+                y += lh
+            y += self.px(16)
+        if self.credits_t > 0.6 + len(lines) * 0.9:
+            self.end_buttons(max(y + self.px(30), h - self.px(140)))
 
     # ----------------------------------------------------------- dossier --
 

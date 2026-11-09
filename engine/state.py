@@ -24,6 +24,12 @@ DEFAULT_DATA = {
     "mom_argued": False,  # stood up to the mother about the news
     "ashamed": False,     # looked away when Marina was detained
     "talked": False,      # told the security services what they asked
+    # remembered for the epilogue
+    "filmed": False, "apologized": False, "observer": False, "refused_kprf": False,
+    "letter": None, "letters": False, "promised_mom": False, "dima_abroad": False,
+    "grief": None, "helped_flood": False, "price_tag": False, "marina_friend": False,
+    "kept_sign": False, "collector": False, "flowers": False, "helped_teens": False,
+    "campaigned": False, "role": None,
 }
 
 _GENDER = re.compile(r"\[\[([^|\]]*)\|([^\]]*)\]\]")

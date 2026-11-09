@@ -2,7 +2,7 @@ import itertools
 import unittest
 
 from engine.state import State
-from engine.story import CHAPTERS, CITIES, ENDINGS, NODES, PROFESSIONS, START_NODE, compute_ending
+from engine.story import CHAPTERS, CITIES, ENDINGS, NODES, PROFESSIONS, START_NODE, compute_ending, epilogue
 
 
 def targets(choice, seeds):
@@ -112,9 +112,13 @@ class TestPlaythrough(unittest.TestCase):
         import random
         rnd = random.Random(7)
         seen = set()
-        for _ in range(400):
-            ending, _ = self.play(lambda nid, n: rnd.randrange(n))
+        for _ in range(3000):
+            ending, s = self.play(lambda nid, n: rnd.randrange(n))
             seen.add(ending)
+            lines = epilogue(s)
+            self.assertGreaterEqual(len(lines), 3)
+            for line in lines + [s.format(ENDINGS[ending]["note"])]:
+                self.assertNotRegex(line, r"\{|\}|\[\[|\]\]", line)
         self.assertEqual(seen, set(ENDINGS), f"unreached endings: {set(ENDINGS) - seen}")
 
 
