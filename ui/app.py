@@ -4,12 +4,16 @@ same story graph and save format as the terminal version.
 """
 from __future__ import annotations
 
+import json
+import os
 import sys
 
 import pygame
 
 from engine import state as state_mod
 from engine.story import DEDICATION, ENDINGS, NODES, PEOPLE, START_NODE, compute_ending
+
+PHOTOS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "photos")
 
 BG = (15, 16, 18)
 FG = (233, 230, 223)
@@ -74,8 +78,52 @@ class App:
 
         self.clickables: list[Rect] = []
         self.scroll = 0
+        self.content_height = 0
+
+        self.photo_cache: dict[str, pygame.Surface | None] = {}
+        self.photo_credits: dict = {}
+        credits_path = os.path.join(PHOTOS_DIR, "credits.json")
+        if os.path.exists(credits_path):
+            try:
+                with open(credits_path, encoding="utf-8") as f:
+                    self.photo_credits = json.load(f)
+            except (OSError, json.JSONDecodeError):
+                self.photo_credits = {}
 
         self.running = True
+
+    def _get_photo(self, key: str) -> pygame.Surface | None:
+        if key not in self.photo_cache:
+            path = os.path.join(PHOTOS_DIR, key + ".jpg")
+            if os.path.exists(path):
+                try:
+                    self.photo_cache[key] = pygame.image.load(path).convert()
+                except pygame.error:
+                    self.photo_cache[key] = None
+            else:
+                self.photo_cache[key] = None
+        return self.photo_cache[key]
+
+    def _draw_photo_background(self, key: str):
+        """Cover-fit the photo behind the current frame and caption its source."""
+        img = self._get_photo(key)
+        if img is None:
+            return
+        w, h = self.screen.get_size()
+        iw, ih = img.get_size()
+        scale = max(w / iw, h / ih)
+        sw, sh = int(iw * scale), int(ih * scale)
+        scaled = pygame.transform.smoothscale(img, (sw, sh))
+        self.screen.blit(scaled, ((w - sw) // 2, (h - sh) // 2))
+
+        meta = self.photo_credits.get(key)
+        if meta:
+            caption = f"Фото: {meta['artist']} / Wikimedia Commons / {meta['license']}"
+            surf = self.f_small.render(caption, True, (210, 207, 200))
+            shadow = self.f_small.render(caption, True, (0, 0, 0))
+            x, y = w - surf.get_width() - int(14 * self.scale), h - surf.get_height() - int(10 * self.scale)
+            self.screen.blit(shadow, (x + 1, y + 1))
+            self.screen.blit(surf, (x, y))
 
     def _load_fonts(self):
         w, h = self.screen.get_size()
@@ -259,6 +307,8 @@ class App:
         w, h = self.screen.get_size()
         m = self.margin
         node = NODES[self.state.node]
+        if node.get("photo"):
+            self._draw_photo_background(node["photo"])
         y = m
 
         header = f"{node['date']}   ·   {self.state.format(node['place'])}"

@@ -1,0 +1,26 @@
+{
+  "nemtsov": {
+    "title": "Boris Nemtsov 2014.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Boris_Nemtsov_2014.jpg",
+    "license": "CC BY-SA 3.0",
+    "artist": "Michael Jarmoluk",
+    "date": "2014",
+    "note": "Monochrome, dimmed, cropped derivative for in-game background use. Identity and content unaltered."
+  },
+  "yashin": {
+    "title": "Ilya Yashin in 2019 (cropped).png",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Ilya_Yashin_in_2019_(cropped).png",
+    "license": "CC BY-SA 4.0",
+    "artist": "Evgeny Feldman",
+    "date": "2019",
+    "note": "Monochrome, dimmed, cropped derivative for in-game background use. Identity and content unaltered."
+  },
+  "navalny": {
+    "title": "Alexey Navalny.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Alexey_Navalny.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Evgeny Feldman / Novaya Gazeta",
+    "date": "2017",
+    "note": "Monochrome, dimmed, cropped derivative for in-game background use. Identity and content unaltered."
+  }
+}
