@@ -90,12 +90,12 @@ CHAPTERS = {
 
 # background for any scene whose own photo is missing; first available wins
 CHAPTER_PHOTOS = {
-    1: ["winter_city", "panelki", "kremlin_night"], 2: ["omon", "winter_city"], 3: ["panelki", "winter_city"],
-    4: ["polling", "winter_city"], 5: ["antiwar_2022", "omon"], 6: ["metro", "winter_city"],
-    7: ["military_office", "panelki"], 8: ["courtroom", "winter_city"], 9: ["winter_city", "panelki"],
-    10: ["navalny_memorial", "winter_city"], 11: ["winter_city", "panelki"], 12: ["kremlin_night", "kremlin"],
+    1: ["khabarovsk", "kremlin_night"], 2: ["navalny_rally", "omon"], 3: ["omon", "kremlin_night"],
+    4: ["polling"], 5: ["antiwar_2022", "omon"], 6: ["metro", "omon"],
+    7: ["omon", "metro"], 8: ["metro", "kremlin_night"], 9: ["polling"],
+    10: ["navalny_memorial", "navalny_funeral"], 11: ["metro", "omon"], 12: ["kremlin_night", "kremlin"],
 }
-FALLBACK_PHOTOS = ["winter_city", "kremlin_night", "panelki", "kremlin"]
+FALLBACK_PHOTOS = ["kremlin_night", "kremlin", "metro"]
 
 ORGS = {
     None: "без организации",

@@ -7,12 +7,36 @@
     "date": "2022-02-24",
     "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
   },
+  "auditorium": {
+    "title": "Level 1 of Main building of Moscow State University 2013-01 1358094599.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Level_1_of_Main_building_of_Moscow_State_University_2013-01_1358094599.jpg",
+    "license": "CC BY 4.0",
+    "artist": "Artyom Svetlov",
+    "date": "Taken on 1",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
+  "kakhovka": {
+    "title": "Flooded Kherson, 2023-06-07 (04).jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Flooded_Kherson,_2023-06-07_(04).jpg",
+    "license": "CC BY 4.0",
+    "artist": "Дмитро Завтонов / АрміяInform",
+    "date": "2023-06-07",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
   "kara_murza": {
     "title": "Vladimir V. Kara-Murza (2017).jpg",
     "source_url": "https://commons.wikimedia.org/wiki/File:Vladimir_V._Kara-Murza_(2017).jpg",
     "license": "CC BY-SA 4.0",
     "artist": "Jindřich Nosek (NoJin)",
     "date": "2017-06-09",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
+  "khabarovsk": {
+    "title": "Demonstration in support of Governor Sergey Furgal in Khabarovsk, 12 July 2020, night-1.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Demonstration_in_support_of_Governor_Sergey_Furgal_in_Khabarovsk,_12_July_2020,_night-1.jpg",
+    "license": "CC BY 3.0",
+    "artist": "POLYAKOV",
+    "date": "2020-07-12",
     "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
   },
   "kremlin": {
@@ -29,6 +53,14 @@
     "license": "CC BY-SA 4.0",
     "artist": "Thomas Taylor Hammond (1920-1993)",
     "date": "Taken in 1",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
+  "metro": {
+    "title": "Moscow, Technopark metro station, April 2025 04.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:Moscow,_Technopark_metro_station,_April_2025_04.jpg",
+    "license": "CC0",
+    "artist": "Retired electrician",
+    "date": "2025-04-18",
     "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
   },
   "navalnaya": {
@@ -95,12 +127,36 @@
     "date": "2015-02-28",
     "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
   },
+  "omon": {
+    "title": "St Petersburg.2019-08-02.Solidarity with Moscow protests rally.IMG 3901.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:St_Petersburg.2019-08-02.Solidarity_with_Moscow_protests_rally.IMG_3901.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Alexei Kouprianov",
+    "date": "2019-08-03",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
   "politkovskaya": {
     "title": "Anna Politkovskaja im Gespräch mit Christhard Läpple.jpg",
     "source_url": "https://commons.wikimedia.org/wiki/File:Anna_Politkovskaja_im_Gespr%C3%A4ch_mit_Christhard_L%C3%A4pple.jpg",
     "license": "CC BY 2.0",
     "artist": "Blaues Sofa",
     "date": "2005-03-17",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
+  "polling": {
+    "title": "PS862 Ryazan, Russia - Parliamentary Election September 2021.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:PS862_Ryazan,_Russia_-_Parliamentary_Election_September_2021.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Alexander Davronov",
+    "date": "Taken on 1",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
+  },
+  "wagner_rostov": {
+    "title": "Танки в Ростове.jpg",
+    "source_url": "https://commons.wikimedia.org/wiki/File:%D0%A2%D0%B0%D0%BD%D0%BA%D0%B8_%D0%B2_%D0%A0%D0%BE%D1%81%D1%82%D0%BE%D0%B2%D0%B5.jpg",
+    "license": "CC BY-SA 4.0",
+    "artist": "Антонина Серебрякова",
+    "date": "2023-06-24",
     "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
   },
   "yashin": {
