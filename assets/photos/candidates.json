@@ -80,21 +80,16 @@
     ]
   },
   "kara_murza": {
-    "title": "File:Vladimir Kara-Murza with then leader of Conservative Party Andrew Scheer in 2017.jpg",
-    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/de/Vladimir_Kara-Murza_with_then_leader_of_Conservative_Party_Andrew_Scheer_in_2017.jpg/960px-Vladimir_Kara-Murza_with_then_leader_of_Conservative_Party_Andrew_Scheer_in_2017.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
-    "page_url": "https://commons.wikimedia.org/wiki/File:Vladimir_Kara-Murza_with_then_leader_of_Conservative_Party_Andrew_Scheer_in_2017.jpg",
-    "width": 5701,
-    "height": 3768,
-    "license": "CC0",
-    "artist": "Andrew Scheer",
-    "date": "2017-06-01",
-    "description": "Met Vladimir Kara-Murza with Peter Kent, James Bezan and Tom Kmiec. Thank you for promoting human rights and democracy in Russia. J’ai rencontré Vladimir Kara-Murza avec Peter Kent, James Bezan et Tom",
-    "alternatives": [
-      "File:Andrew Scheer and Vladimir Kara-Murza.jpg",
-      "File:Evgenia Kara-Murza and her children talk with Vladimir Kara-Murza (53894813007).jpg",
-      "File:Families and President Joe Biden talk to journalist Alsu Kurmasheva, Wall Street Journal reporter Evan Gershkovich, former U.S. Marine Paul Whelan and journalist Vladimir Kara-Murza following a prisoner swap with Russia, August 1, 2024.jpg",
-      "File:President Joe Biden meets families of Wall Street Journal reporter Evan Gershkovich, former U.S. Marine Paul Whelan, and journalists Alsu Kurmasheva and Vladimir Kara-Murza after a prisoner swap with Russia, August 1, 2024.jpg"
-    ]
+    "title": "File:Vladimir V. Kara-Murza (2017).jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ac/Vladimir_V._Kara-Murza_%282017%29.jpg/960px-Vladimir_V._Kara-Murza_%282017%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Vladimir_V._Kara-Murza_(2017).jpg",
+    "width": 1024,
+    "height": 1280,
+    "license": "CC BY-SA 4.0",
+    "artist": "Jindřich Nosek (NoJin)",
+    "date": "2017-06-09",
+    "description": "Vladimir V. Kara-Murza (2017)",
+    "alternatives": []
   },
   "yashin": {
     "title": "File:Ilya Yashin in 2019.jpg",
@@ -131,21 +126,16 @@
     ]
   },
   "nemtsov": {
-    "title": "File:March in memory of Boris Nemtsov in Moscow (2019-02-24) 138.jpg",
-    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/March_in_memory_of_Boris_Nemtsov_in_Moscow_%282019-02-24%29_138.jpg/960px-March_in_memory_of_Boris_Nemtsov_in_Moscow_%282019-02-24%29_138.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
-    "page_url": "https://commons.wikimedia.org/wiki/File:March_in_memory_of_Boris_Nemtsov_in_Moscow_(2019-02-24)_138.jpg",
-    "width": 4752,
-    "height": 3168,
-    "license": "CC0",
-    "artist": "DonSimon",
-    "date": "2019-02-24",
-    "description": "March in memory of Boris Nemtsov in Moscow (2019).",
-    "alternatives": [
-      "File:March in memory of Boris Nemtsov in Moscow (2019-02-24) 21.jpg",
-      "File:March in memory of Boris Nemtsov in Moscow (2019-02-24) 24.jpg",
-      "File:March in memory of Boris Nemtsov in Moscow (2019-02-24) 253.jpg",
-      "File:March in memory of Boris Nemtsov in Moscow (2019-02-24) 50.jpg"
-    ]
+    "title": "File:Boris Nemtsov 2014.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Boris_Nemtsov_2014.jpg/960px-Boris_Nemtsov_2014.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Boris_Nemtsov_2014.jpg",
+    "width": 2955,
+    "height": 3940,
+    "license": "CC BY-SA 3.0",
+    "artist": "Dhārmikatva",
+    "date": "Taken on 1",
+    "description": "Борис Немцов",
+    "alternatives": []
   },
   "nemtsov_bridge": {
     "title": "File:There are flowers and candles near the site of the murder of Boris Nemtsov.jpg",
@@ -206,5 +196,29 @@
     "alternatives": [
       "File:Funeral of Alexei Navalny March 1st 2024 2.jpg"
     ]
+  },
+  "navalny_portrait": {
+    "title": "File:Alexey Navalny.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b1/Alexey_Navalny.jpg/960px-Alexey_Navalny.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Alexey_Navalny.jpg",
+    "width": 2784,
+    "height": 1848,
+    "license": "CC BY-SA 4.0",
+    "artist": "Mitya Aleshkovskiy",
+    "date": "2011-10-22",
+    "description": "Алексей Навальный на одном из митингов в Москве.",
+    "alternatives": []
+  },
+  "politkovskaya": {
+    "title": "File:Anna Politkovskaja im Gespräch mit Christhard Läpple.jpg",
+    "thumb": "https://upload.wikimedia.org/wikipedia/commons/3/32/Anna_Politkovskaja_im_Gespr%C3%A4ch_mit_Christhard_L%C3%A4pple.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Anna_Politkovskaja_im_Gespr%C3%A4ch_mit_Christhard_L%C3%A4pple.jpg",
+    "width": 384,
+    "height": 480,
+    "license": "CC BY 2.0",
+    "artist": "Blaues Sofa",
+    "date": "2005-03-17",
+    "description": "Anna Politkovskaya talking with Christhard Läpple.",
+    "alternatives": []
   }
 }
