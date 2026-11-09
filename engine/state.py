@@ -1,108 +1,82 @@
-"""Переходы по сюжетному графу, последствия и концовки."""
+"""Player state: identity + accumulated story flags, with save/load."""
 from __future__ import annotations
 
-import copy
-from datetime import datetime, timezone
-from typing import Any
-
-from .constants import INITIAL_STATE
-from .content import ENDINGS
+import json
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Dict
 
 
-def new_state() -> dict[str, Any]:
-    state = copy.deepcopy(INITIAL_STATE)
-    state["started_at"] = datetime.now(timezone.utc).isoformat()
-    return state
+DEFAULT_DATA = {
+    "voice": 0,
+    "trust": None,
+    "joined": False,
+    "left": False,
+    "betrayed": False,
+}
 
 
-def clamp(value: int) -> int:
-    return max(0, min(100, int(value)))
+@dataclass
+class State:
+    name: str = ""
+    profession: str = ""
+    city: str = ""
+    node: str = "n1"
+    data: Dict[str, Any] = field(default_factory=lambda: dict(DEFAULT_DATA))
+
+    def add(self, key: str, amount: int) -> None:
+        self.data[key] = self.data.get(key, 0) + amount
+
+    def set(self, key: str, value: Any) -> None:
+        self.data[key] = value
+
+    def format(self, text: str) -> str:
+        return (
+            text.replace("{name}", self.name or "Ты")
+            .replace("{city}", self.city or "твой город")
+            .replace("{prof}", (self.profession or "человек").lower())
+        )
+
+    def to_json(self) -> dict:
+        return {
+            "name": self.name, "profession": self.profession, "city": self.city,
+            "node": self.node, "data": self.data,
+        }
+
+    @classmethod
+    def from_json(cls, raw: dict) -> "State":
+        s = cls()
+        s.name = raw.get("name", "")
+        s.profession = raw.get("profession", "")
+        s.city = raw.get("city", "")
+        s.node = raw.get("node", "n1")
+        s.data = {**DEFAULT_DATA, **raw.get("data", {})}
+        return s
 
 
-def apply_choice(state, event, choice_index: int) -> None:
-    if state["completed"]:
-        raise ValueError("Кампания уже завершена")
-    if event["id"] != state["event_id"] or state["pending_event"]:
-        raise ValueError("Эпизод не соответствует сохранённому состоянию")
-    if not 0 <= choice_index < len(event["choices"]):
-        raise IndexError("Некорректный вариант решения")
-    choice = event["choices"][choice_index]
-    for key, delta in choice["effects"].items():
-        if key in state["metrics"]:
-            state["metrics"][key] = clamp(state["metrics"][key] + delta)
-    for key, delta in choice.get("regions", {}).items():
-        if key in state["regions"]:
-            state["regions"][key] = clamp(state["regions"][key] + delta)
-    state["route"] = choice.get("route", state["route"])
-    for name in choice.get("credits", []):
-        if name not in state["credits"]:
-            state["credits"].append(name)
-    state["alternative_history"] = True
-    state["pending_event"] = choice["next"]
-    state["history"].append({
-        "event_id": event["id"],
-        "event_date": event["date"],
-        "event_title": event["title"],
-        "choice_index": choice_index,
-        "choice": choice["text"],
-        "result": choice["result"],
-        "route": state["route"],
-        "next": choice["next"],
-        "ending": choice.get("ending"),
-        "fallback": choice.get("fallback"),
-        "metrics_after": dict(state["metrics"]),
-    })
-    state["ending_id"] = crisis_ending(state)
-    if state["ending_id"]:
-        state["completed"] = True
+def save_path() -> Path:
+    return Path.home() / ".point_of_no_return_save.json"
 
 
-def advance(state, events=None) -> None:
-    if state["completed"]:
-        return
-    target = state["pending_event"]
-    if not target:
-        raise ValueError("Сначала необходимо принять решение")
-    if target == "END":
-        state["completed"] = True
-        state["ending_id"] = final_ending(state)
-    else:
-        state["event_id"] = target
-        state["chapter"] += 1
-    state["pending_event"] = None
+def save(state: State) -> None:
+    try:
+        save_path().write_text(json.dumps(state.to_json(), ensure_ascii=False, indent=2), encoding="utf-8")
+    except OSError:
+        pass
 
 
-def crisis_ending(state) -> str | None:
-    metrics = state["metrics"]
-    if metrics["trust"] <= 0:
-        return "no_trust"
-    if metrics["resources"] <= 0:
-        return "no_resources"
-    if metrics["pressure"] >= 100:
-        return "shutdown"
-    return None
+def load() -> State | None:
+    p = save_path()
+    if not p.exists():
+        return None
+    try:
+        return State.from_json(json.loads(p.read_text(encoding="utf-8")))
+    except (OSError, json.JSONDecodeError):
+        return None
 
 
-def final_ending(state) -> str:
-    crisis = crisis_ending(state)
-    if crisis:
-        return crisis
-    if not state["history"]:
-        return "long_road"
-    metrics = state["metrics"]
-    if metrics["trust"] < 25:
-        return "split"
-    if metrics["resources"] < 10:
-        return "exhaustion"
-    last = state["history"][-1]
-    developed = sum(value >= 28 for value in state["regions"].values())
-    successful = (
-        metrics["support"] >= 35 and metrics["trust"] >= 25
-        and metrics["resources"] >= 10 and metrics["pressure"] < 100
-        and developed >= 2
-    )
-    return last["ending"] if successful else last.get("fallback", "long_road")
-
-
-def ending_for(state) -> dict[str, Any]:
-    return ENDINGS[state.get("ending_id") or final_ending(state)]
+def clear() -> None:
+    try:
+        save_path().unlink(missing_ok=True)
+    except OSError:
+        pass

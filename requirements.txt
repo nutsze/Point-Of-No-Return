@@ -1,4 +1,1 @@
-pygame==2.6.1
-pyinstaller==6.11.1
-Pillow>=10.0,<13
-numpy>=1.26,<3
+# No third-party dependencies — standard library only.
