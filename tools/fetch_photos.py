@@ -42,15 +42,14 @@ SUBJECTS = {
     "shlosberg": "Lev Shlosberg",
     "nemtsov": "Boris Nemtsov",
     "nemtsov_bridge": "Nemtsov bridge memorial flowers",
-    "protest_2021": "protests Russia January 2021",
+    "protest_2021": "Navalny protest Moscow 23 January 2021",
     "antiwar_2022": "anti-war protest Russia 2022",
-    "mobilization_2022": "Upper Lars queue Russia mobilization 2022",
-    "nadezhdin_queue": "Nadezhdin signatures queue 2024",
+    "mobilization_2022": "Verkhny Lars border queue September 2022",
+    "nadezhdin_queue": "Boris Nadezhdin signatures 2024",
     "navalny_memorial": "Navalny memorial flowers February 2024",
     "navalny_funeral": "Navalny funeral Borisovskoye cemetery",
     "politkovskaya": "Anna Politkovskaya",
     "estemirova": "Natalia Estemirova",
-    "memorial_org": "Memorial human rights Moscow office",
 }
 
 # key -> exact Commons file, used instead of the search when the search picks

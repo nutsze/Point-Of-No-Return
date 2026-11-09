@@ -843,7 +843,7 @@ ENDINGS = {
     ),
     "emigration": dict(
         headline="ИЗДАЛЕКА", sub="Свобода, которую видишь в новостях", music="grief",
-        photo="kremlin_night", credits=False,
+        photo="navalny_memorial", credits=False,
         note=(
             "{name} смотрит на ликующие толпы по телевизору в чужой стране. Это настоящая "
             "победа — но не твоя. Чемодан так и не был разобран до конца. "

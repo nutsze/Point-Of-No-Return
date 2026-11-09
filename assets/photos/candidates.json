@@ -1,20 +1,15 @@
 {
   "kremlin": {
-    "title": "File:Panorama 360 Red Square.jpg",
-    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1f/Panorama_360_Red_Square.jpg/960px-Panorama_360_Red_Square.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
-    "page_url": "https://commons.wikimedia.org/wiki/File:Panorama_360_Red_Square.jpg",
-    "width": 17756,
-    "height": 3036,
-    "license": "CC BY-SA 3.0",
-    "artist": "A.Savin",
-    "date": "2009-07-19",
-    "description": "NOTE: This image is a panorama consisting of multiple frames that were merged or stitched in software. As a result, this image necessarily underwent some form of digital manipulation. These manipulati",
-    "alternatives": [
-      "File:Kremlin wall - Red Square.jpg",
-      "File:Moscow - Red Square, the Kremlin Wall and Lenin's Mausoleum.jpg",
-      "File:Moscow - Red Square, the Kremlin Wall.jpg",
-      "File:Russia-2007-Moscow-Kremlin Senate at night.jpg"
-    ]
+    "title": "File:Kremlin wall - Red Square.jpg",
+    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ec/Kremlin_wall_-_Red_Square.jpg/960px-Kremlin_wall_-_Red_Square.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "page_url": "https://commons.wikimedia.org/wiki/File:Kremlin_wall_-_Red_Square.jpg",
+    "width": 6000,
+    "height": 4000,
+    "license": "CC BY 4.0",
+    "artist": "Юрий Д.К.",
+    "date": "Taken on 1",
+    "description": "Kremlin wall - Red Square",
+    "alternatives": []
   },
   "kremlin_night": {
     "title": "File:1964 Hammond Slides Church.jpg",
@@ -167,23 +162,6 @@
       "File:Red roses on the Nemtsov bridge (50988070968).jpg",
       "File:There are flowers and candles near the site of the murder of Boris Nemtsov cropped.jpg",
       "File:Site of the murder of Boris Nemtsov 4655.jpg"
-    ]
-  },
-  "protest_2021": {
-    "title": "File:CounterDemonstrator.WildProtest.WDC.6January2021 (50809613187).jpg",
-    "thumb": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/05/CounterDemonstrator.WildProtest.WDC.6January2021_%2850809613187%29.jpg/960px-CounterDemonstrator.WildProtest.WDC.6January2021_%2850809613187%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
-    "page_url": "https://commons.wikimedia.org/wiki/File:CounterDemonstrator.WildProtest.WDC.6January2021_(50809613187).jpg",
-    "width": 6000,
-    "height": 4000,
-    "license": "CC BY-SA 2.0",
-    "artist": "Elvert Barnes",
-    "date": "2021-01-06",
-    "description": "Lone Counter Demonstrator along Frist Street between Columbus Circle and D Street, NE, Washington DC on Wednesday morning, 6 January 2021 by Elvert Barnes Photography THE GOP IS PUTIN'S PARTY Saturday",
-    "alternatives": [
-      "File:Protests against the arrest of opposition politician Alexei Navalny. Saint Petersburg, 23 January 2021.jpg",
-      "File:Protester in the costume (cosplaying) 2021 storming of the United States Capitol.jpg",
-      "File:Forces of the National Guard during Anti-Putin protests. Saint Petersburg, 23 January 2021.jpg",
-      "File:Митинг 31.01.2021 Краснодар victor morozov.jpg"
     ]
   },
   "antiwar_2022": {
