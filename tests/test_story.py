@@ -1,85 +1,118 @@
+import itertools
 import unittest
 
 from engine.state import State
-from engine.story import NODES, START_NODE, ENDINGS, compute_ending
+from engine.story import CHAPTERS, CITIES, ENDINGS, NODES, PROFESSIONS, START_NODE, compute_ending
+
+
+def targets(choice, seeds):
+    _label, nxt, _fx = choice
+    return {nxt(s) for s in seeds} if callable(nxt) else {nxt}
+
+
+def seed_states():
+    """States covering every flag combination that data-dependent branches read."""
+    out = []
+    for saved, risk, left, arrested, trust, org in itertools.product(
+            (True, False), (0, 10), (False, True), (False, True),
+            ("marina", "oleg"), (None, "fbk")):
+        s = State()
+        s.data.update(saved_dima=saved, risk=risk, left=left, arrested=arrested, trust=trust, org=org)
+        out.append(s)
+    return out
 
 
 class TestGraph(unittest.TestCase):
-    def test_all_next_ids_exist_or_are_finale(self):
-        for node_id, node in NODES.items():
-            for label, tag, nxt, fx in node["choices"]:
-                if callable(nxt):
-                    continue  # data-dependent, checked separately
-                self.assertTrue(
-                    nxt == "FINALE" or nxt in NODES,
-                    f"{node_id} points to missing node {nxt!r}",
-                )
+    def test_every_target_exists(self):
+        seeds = seed_states()
+        for nid, node in NODES.items():
+            for choice in node["choices"]:
+                for t in targets(choice, seeds):
+                    self.assertTrue(t == "FINALE" or t in NODES, f"{nid} -> missing {t!r}")
 
-    def test_start_node_exists(self):
-        self.assertIn(START_NODE, NODES)
-
-    def test_every_node_reachable_from_start(self):
-        # Explore with a couple of seed states so data-dependent branches
-        # (callable `next`) can resolve to every target they support.
-        seeds = [State(), State()]
-        seeds[1].data["trust"] = "marina"
-        seeds[1].data["left"] = False
-
-        seen = set()
-        stack = [START_NODE]
+    def test_every_node_reachable(self):
+        seeds = seed_states()
+        seen, stack = set(), [START_NODE]
         while stack:
             nid = stack.pop()
             if nid in seen or nid == "FINALE":
                 continue
             seen.add(nid)
-            for label, tag, nxt, fx in NODES[nid]["choices"]:
-                targets = {nxt(seed) for seed in seeds} if callable(nxt) else {nxt}
-                for target in targets:
-                    if target != "FINALE":
-                        stack.append(target)
-        self.assertEqual(seen, set(NODES.keys()))
+            for choice in NODES[nid]["choices"]:
+                stack.extend(targets(choice, seeds))
+        self.assertEqual(set(NODES) - seen, set())
 
-    def test_every_node_has_at_least_one_choice(self):
-        for node_id, node in NODES.items():
-            self.assertTrue(len(node["choices"]) >= 1, node_id)
+    def test_twelve_chapters_all_used(self):
+        self.assertEqual(sorted(CHAPTERS), list(range(1, 13)))
+        self.assertEqual({n["chapter"] for n in NODES.values()}, set(range(1, 13)))
+
+    def test_quotes_have_speaker_and_source(self):
+        for nid, node in NODES.items():
+            q = node.get("quote")
+            if q:
+                self.assertTrue(q["text"] and q["who"] and q["source"], nid)
+
+    def test_placeholders_resolve(self):
+        for gender, prof, city in itertools.product("mf", PROFESSIONS, CITIES):
+            s = State(name="Тест", gender=gender, profession=prof, city=city)
+            for nid, node in NODES.items():
+                texts = [node["text"], node["place"]] + [c[0] for c in node["choices"]]
+                for t in texts:
+                    out = s.format(t)
+                    self.assertNotRegex(out, r"\{|\}|\[\[|\]\]", f"{nid}: {out[:80]}")
 
 
-class TestEndings(unittest.TestCase):
-    def _play(self, **flags):
-        s = State(name="Тест", profession="Инженер(ка)", city="Томск")
-        s.data.update(flags)
-        return compute_ending(s)
+class TestPlaythrough(unittest.TestCase):
+    def play(self, pick):
+        """Walk the graph choosing with pick(node_id, n_choices) until FINALE."""
+        s = State(name="Аня", gender="f", profession="doctor", city="Томск")
+        nid, steps = START_NODE, 0
+        while nid != "FINALE":
+            choices = NODES[nid]["choices"]
+            _label, nxt, fx = choices[pick(nid, len(choices))]
+            if fx:
+                fx(s)
+            nid = nxt(s) if callable(nxt) else nxt
+            steps += 1
+            self.assertLess(steps, 200)
+        return compute_ending(s), s
 
-    def test_win_by_default_high_voice(self):
-        self.assertEqual(self._play(voice=5, joined=True, left=False, betrayed=False), "win")
+    def test_bold_path_wins(self):
+        ending, _ = self.play(lambda nid, n: 0)
+        self.assertIn(ending, ("win", "win_prison", "win_return", "tragic"))
 
-    def test_emigration_when_left_and_not_joined(self):
-        self.assertEqual(self._play(voice=3, joined=False, left=True, betrayed=False), "emigration")
+    def test_passive_path_is_quiet(self):
+        ending, _ = self.play(lambda nid, n: n - 1)
+        self.assertIn(ending, ("quiet", "emigration"))
 
-    def test_tragic_when_betrayed_and_vocal(self):
-        self.assertEqual(self._play(voice=5, joined=True, left=False, betrayed=True), "tragic")
-
-    def test_quiet_when_low_voice_and_not_joined(self):
-        self.assertEqual(self._play(voice=1, joined=False, left=False, betrayed=False), "quiet")
-
-    def test_all_endings_defined(self):
-        for key in ("win", "emigration", "tragic", "quiet"):
-            self.assertIn(key, ENDINGS)
+    def test_many_random_paths_reach_an_ending(self):
+        import random
+        rnd = random.Random(7)
+        seen = set()
+        for _ in range(400):
+            ending, _ = self.play(lambda nid, n: rnd.randrange(n))
+            seen.add(ending)
+        self.assertEqual(seen, set(ENDINGS), f"unreached endings: {set(ENDINGS) - seen}")
 
 
 class TestState(unittest.TestCase):
-    def test_format_substitutes_placeholders(self):
-        s = State(name="Аня", profession="Врач", city="Казань")
-        out = s.format("{name} работает {prof} в {city}")
-        self.assertEqual(out, "Аня работает врач в Казань")
+    def test_gendered_forms(self):
+        m = State(name="Иван", gender="m", profession="teacher", city="Казань")
+        f = State(name="Анна", gender="f", profession="teacher", city="Казань")
+        t = "{name} [[пошёл|пошла]] в школу. Работает {prof_ins} в {city_pre}, родом из {city_gen}."
+        self.assertEqual(m.format(t), "Иван пошёл в школу. Работает учителем в Казани, родом из Казани.")
+        self.assertEqual(f.format(t), "Анна пошла в школу. Работает учительницей в Казани, родом из Казани.")
 
-    def test_add_and_set(self):
-        s = State()
-        s.add("voice", 2)
+    def test_empty_masculine_suffix(self):
+        self.assertEqual(State(gender="m").format("сказал[[|а]]"), "сказал")
+        self.assertEqual(State(gender="f").format("сказал[[|а]]"), "сказала")
+
+    def test_save_roundtrip(self):
+        s = State(name="Аня", gender="f", profession="doctor", city="Томск")
         s.add("voice", 3)
-        self.assertEqual(s.data["voice"], 5)
-        s.set("joined", True)
-        self.assertTrue(s.data["joined"])
+        s.set("org", "yabloko")
+        r = State.from_json(s.to_json())
+        self.assertEqual((r.name, r.gender, r.data["voice"], r.data["org"]), ("Аня", "f", 3, "yabloko"))
 
 
 if __name__ == "__main__":

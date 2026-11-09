@@ -6,6 +6,9 @@ on:
       - "v*"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-windows:
     runs-on: windows-latest
@@ -27,7 +30,11 @@ jobs:
       - name: Build EXE
         run: >
           pyinstaller --onefile --windowed --name TenWinters
-          --collect-all pygame --distpath dist main.py
+          --collect-all pygame
+          --add-data "assets/fonts;assets/fonts"
+          --add-data "assets/photos;assets/photos"
+          --add-data "assets/audio;assets/audio"
+          --distpath dist main.py
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -35,29 +42,13 @@ jobs:
           name: TenWinters-windows
           path: dist/TenWinters.exe
 
-      - name: Create GitHub Release
+      - name: Attach EXE to the release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: dist/TenWinters.exe
-          name: "Ten Winters — Alpha 0.1"
-          prerelease: true
           body: |
-            Альфа-версия 0.1. Визуальная новелла, 2020-2030.
+            **Ten Winters** — визуальная новелла о десяти годах российской истории, 2020–2030.
 
-            ## Запуск
-            Скачай `TenWinters.exe` и запусти — Python не нужен,
-            всё собрано в один файл. Окно поддерживает 2K/4K и
-            изменение размера; `F11` — полноэкранный режим, `Esc` — выход
-            из него.
-
-            ## Из исходников
-            ```
-            pip install -r requirements.txt
-            python3 main.py          # графическое окно
-            python3 main.py --text   # терминальная версия, без зависимостей
-            ```
-
-            Подробности, список реальных фигур в игре и правила
-            расширения сюжета — в `README.md`.
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            Скачай `TenWinters.exe` и запусти. Python не нужен.
+            F11 — полный экран, M — звук, Esc — пауза.

@@ -1,118 +1,180 @@
-"""Download chosen Commons files, build a monochrome/dimmed derivative for
-in-game background use, and write full attribution metadata."""
+"""Slow, polite Wikimedia Commons photo fetcher for Ten Winters.
+
+For each subject: one REST search on Commons, one batched imageinfo call for
+license/author metadata, then a 960px thumbnail download. Only freely licensed
+files (CC BY, CC BY-SA, CC0, public domain) are kept. Every API call is spaced
+out and honours Retry-After, because the Wikimedia APIs rate-limit hard.
+
+Output: assets/photos/raw/<key>.jpg plus assets/photos/candidates.json.
+tools/process_photos.py then builds the in-game derivatives and credits.json.
+
+    pip install pillow
+    python3 tools/fetch_photos.py
+"""
+from __future__ import annotations
+
 import json
 import os
+import re
+import sys
+import time
+import urllib.error
+import urllib.parse
 import urllib.request
 
-from PIL import Image, ImageEnhance, ImageOps, ImageDraw
-
 UA = "TenWintersGame/0.1 (educational visual-novel project; non-commercial)"
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUT_DIR = os.path.join(REPO_ROOT, "assets", "photos")
-os.makedirs(OUT_DIR, exist_ok=True)
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RAW_DIR = os.path.join(ROOT, "assets", "photos", "raw")
+CANDIDATES = os.path.join(ROOT, "assets", "photos", "candidates.json")
+API_GAP = 25  # seconds between API calls
+OK_LICENSES = ("CC BY", "CC-BY", "CC0", "Public domain", "PD", "CC BY-SA", "CC-BY-SA")
 
-# key -> (title, source page url, thumb/original url, license, artist, date)
-CHOSEN = {
-    "kremlin": dict(
-        title="Kremlin wall - Red Square.jpg",
-        page_url="https://commons.wikimedia.org/wiki/File:Kremlin_wall_-_Red_Square.jpg",
-        url="https://upload.wikimedia.org/wikipedia/commons/e/ec/Kremlin_wall_-_Red_Square.jpg",
-        license="CC BY 4.0", artist="A.Savin", date="",
-    ),
-    "navalny": dict(
-        title="Alexey Navalny.jpg",
-        page_url="https://commons.wikimedia.org/wiki/File:Alexey_Navalny.jpg",
-        url="https://upload.wikimedia.org/wikipedia/commons/b/b1/Alexey_Navalny.jpg",
-        license="CC BY-SA 4.0", artist="Evgeny Feldman / Novaya Gazeta", date="2017",
-    ),
-    "kara_murza": dict(
-        title="Vladimir V. Kara-Murza (2017).jpg",
-        page_url="https://commons.wikimedia.org/wiki/File:Vladimir_V._Kara-Murza_(2017).jpg",
-        url="https://upload.wikimedia.org/wikipedia/commons/a/ac/Vladimir_V._Kara-Murza_%282017%29.jpg",
-        license="CC BY-SA 4.0", artist="Michael Jarmoluk / U.S. Institute of Peace", date="2017",
-    ),
-    "yashin": dict(
-        title="Ilya Yashin in 2019 (cropped).png",
-        page_url="https://commons.wikimedia.org/wiki/File:Ilya_Yashin_in_2019_(cropped).png",
-        url="https://upload.wikimedia.org/wikipedia/commons/3/39/Ilya_Yashin_in_2019_%28cropped%29.png",
-        license="CC BY-SA 4.0", artist="Evgeny Feldman", date="2019",
-    ),
-    "nemtsov": dict(
-        title="Boris Nemtsov 2014.jpg",
-        page_url="https://commons.wikimedia.org/wiki/File:Boris_Nemtsov_2014.jpg",
-        url="https://upload.wikimedia.org/wikipedia/commons/7/75/Boris_Nemtsov_2014.jpg",
-        license="CC BY-SA 3.0", artist="Michael Jarmoluk", date="2014",
-    ),
-    "politkovskaya": dict(
-        title="Anna Stepanowna Politkowskaja, Tschetschenien 2003.jpg",
-        page_url="https://commons.wikimedia.org/wiki/File:Anna_Stepanowna_Politkowskaja,_Tschetschenien_2003.jpg",
-        url="https://upload.wikimedia.org/wikipedia/commons/3/34/Anna_Stepanowna_Politkowskaja%2C_Tschetschenien_2003.jpg",
-        license="Public domain", artist="unknown", date="2003",
-    ),
-    "estemirova": dict(
-        title="Natalia Estemirova.jpg",
-        page_url="https://commons.wikimedia.org/wiki/File:Natalia_Estemirova.jpg",
-        url="https://upload.wikimedia.org/wikipedia/commons/3/30/Natalia_Estemirova.jpg",
-        license="CC BY-SA 4.0", artist="unknown / Memorial", date="",
-    ),
+# key -> Commons search query
+SUBJECTS = {
+    "kremlin": "Moscow Kremlin wall Red Square",
+    "kremlin_night": "Moscow Kremlin night",
+    "navalny": "Alexey Navalny",
+    "navalny_rally": "Navalny rally Moscow",
+    "navalnaya": "Yulia Navalnaya",
+    "kara_murza": "Vladimir Kara-Murza",
+    "yashin": "Ilya Yashin",
+    "yavlinsky": "Grigory Yavlinsky",
+    "shlosberg": "Lev Shlosberg",
+    "nemtsov": "Boris Nemtsov",
+    "nemtsov_bridge": "Nemtsov bridge memorial flowers",
+    "protest_2021": "protests Russia January 2021",
+    "antiwar_2022": "anti-war protest Russia 2022",
+    "mobilization_2022": "Upper Lars queue Russia mobilization 2022",
+    "nadezhdin_queue": "Nadezhdin signatures queue 2024",
+    "navalny_memorial": "Navalny memorial flowers February 2024",
+    "navalny_funeral": "Navalny funeral Borisovskoye cemetery",
+    "politkovskaya": "Anna Politkovskaya",
+    "estemirova": "Natalia Estemirova",
+    "memorial_org": "Memorial human rights Moscow office",
+}
+
+# key -> exact Commons file, used instead of the search when the search picks
+# the wrong image (a panorama, a group shot, a different subject)
+OVERRIDES = {
+    "kremlin": "File:Kremlin wall - Red Square.jpg",
+    "kara_murza": "File:Vladimir V. Kara-Murza (2017).jpg",
+    "navalny_portrait": "File:Alexey Navalny.jpg",
+    "nemtsov": "File:Boris Nemtsov 2014.jpg",
+    "politkovskaya": "File:Anna Politkovskaja im Gespräch mit Christhard Läpple.jpg",
+    "estemirova": "File:Natalia Estemirova.jpg",
 }
 
 
-def download(url, dest):
-    req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=30) as r, open(dest, "wb") as f:
-        f.write(r.read())
+def get(url: str, as_json: bool = True, tries: int = 6):
+    delay = API_GAP
+    for attempt in range(tries):
+        req = urllib.request.Request(url, headers={"User-Agent": UA})
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                data = r.read()
+            return json.loads(data) if as_json else data
+        except urllib.error.HTTPError as e:
+            if e.code != 429:
+                raise
+            wait = int(e.headers.get("Retry-After") or delay)
+            print(f"    429, waiting {wait}s", flush=True)
+            time.sleep(wait)
+            delay = min(delay * 2, 300)
+    raise RuntimeError("gave up after repeated 429s: " + url)
 
 
-def process(src_path, dest_path, target_w=1600):
-    im = Image.open(src_path).convert("RGB")
-    w, h = im.size
-    scale = target_w / w
-    im = im.resize((target_w, int(h * scale)), Image.LANCZOS)
-    # square-ish crop centered, 16:10-ish for background use
-    tw, th = target_w, int(target_w * 0.68)
-    if im.height > th:
-        top = (im.height - th) // 2
-        im = im.crop((0, top, tw, top + th))
-    gray = ImageOps.grayscale(im)
-    gray = ImageOps.autocontrast(gray, cutoff=1)
-    rgb = Image.merge("RGB", (gray, gray, gray))
-    rgb = ImageEnhance.Contrast(rgb).enhance(1.05)
-    rgb = ImageEnhance.Brightness(rgb).enhance(0.8)  # dim, for text overlay legibility
-    # vignette (dark ellipse overlay, strongest at the edges, clear in the centre)
-    vign = Image.new("L", rgb.size, 0)
-    d = ImageDraw.Draw(vign)
-    d.ellipse([-rgb.width * 0.15, -rgb.height * 0.25, rgb.width * 1.15, rgb.height * 1.25], fill=110)
-    rgb = Image.composite(rgb, Image.new("RGB", rgb.size, (8, 8, 9)), vign)
-    rgb.save(dest_path, quality=87)
+def strip_html(s: str) -> str:
+    return re.sub(r"\s+", " ", re.sub("<[^>]+>", "", s or "")).strip()
+
+
+def search(query: str) -> list[str]:
+    url = ("https://commons.wikimedia.org/w/rest.php/v1/search/page?"
+           + urllib.parse.urlencode({"q": "filetype:bitmap " + query, "limit": 12}))
+    pages = get(url)["pages"]
+    return [p["key"] for p in pages if p["key"].startswith("File:")]
+
+
+def metadata(titles: list[str]) -> list[dict]:
+    url = ("https://commons.wikimedia.org/w/api.php?" + urllib.parse.urlencode({
+        "action": "query", "titles": "|".join(titles), "prop": "imageinfo",
+        "iiprop": "url|extmetadata|size", "iiurlwidth": 960, "format": "json",
+    }))
+    out = []
+    for p in get(url).get("query", {}).get("pages", {}).values():
+        info = (p.get("imageinfo") or [None])[0]
+        if not info:
+            continue
+        m = info.get("extmetadata", {})
+        out.append({
+            "title": p["title"],
+            "thumb": info.get("thumburl"),
+            "page_url": info.get("descriptionurl"),
+            "width": info.get("width"), "height": info.get("height"),
+            "license": strip_html(m.get("LicenseShortName", {}).get("value", "")),
+            "artist": strip_html(m.get("Artist", {}).get("value", "")),
+            "date": strip_html(m.get("DateTimeOriginal", {}).get("value", ""))[:10],
+            "description": strip_html(m.get("ImageDescription", {}).get("value", ""))[:200],
+        })
+    return out
+
+
+def acceptable(c: dict, min_width: int = 800) -> bool:
+    lic = c["license"]
+    if not lic or not any(lic.startswith(ok) for ok in OK_LICENSES):
+        return False
+    if "NC" in lic or "ND" in lic:
+        return False
+    w, h = c["width"] or 0, c["height"] or 1
+    return bool(c["thumb"]) and w >= min_width and w / h <= 2.5  # no panoramas
+
+
+def main(keys: list[str]) -> None:
+    os.makedirs(RAW_DIR, exist_ok=True)
+    found = {}
+    if os.path.exists(CANDIDATES):
+        with open(CANDIDATES, encoding="utf-8") as f:
+            found = json.load(f)
+    forced = set(keys)
+    for key in keys or list(SUBJECTS) + [k for k in OVERRIDES if k not in SUBJECTS]:
+        have = key in found and os.path.exists(os.path.join(RAW_DIR, key + ".jpg"))
+        override = OVERRIDES.get(key)
+        if have and key not in forced and not (override and found[key]["title"] != override):
+            print(f"{key}: already have it")
+            continue
+        try:
+            if override:
+                print(f"{key}: fetching {override}", flush=True)
+                cands = [c for c in metadata([override]) if acceptable(c, min_width=300)]
+            else:
+                print(f"{key}: searching '{SUBJECTS[key]}'", flush=True)
+                titles = search(SUBJECTS[key])
+                time.sleep(API_GAP)
+                cands = [c for c in metadata(titles[:10]) if acceptable(c)] if titles else []
+            time.sleep(API_GAP)
+        except Exception as e:  # keep going with the other subjects
+            print(f"  failed: {e}", flush=True)
+            continue
+        if not cands:
+            print("  no freely licensed match", flush=True)
+            continue
+        # prefer landscape images for full-screen backgrounds
+        cands.sort(key=lambda c: (c["width"] < c["height"], -c["width"]))
+        best = cands[0]
+        try:
+            data = get(best["thumb"], as_json=False)
+        except Exception as e:
+            print(f"  download failed: {e}", flush=True)
+            continue
+        with open(os.path.join(RAW_DIR, key + ".jpg"), "wb") as f:
+            f.write(data)
+        best["alternatives"] = [c["title"] for c in cands[1:5]]
+        found[key] = best
+        with open(CANDIDATES, "w", encoding="utf-8") as f:
+            json.dump(found, f, ensure_ascii=False, indent=2)
+        print(f"  saved {best['title']} | {best['license']} | {best['artist'][:60]}", flush=True)
+        time.sleep(5)
+    print("done:", len(found), "photos")
 
 
 if __name__ == "__main__":
-    import json as _json
-    import tempfile
-
-    tmp_dir = tempfile.mkdtemp(prefix="ten_winters_photos_")
-    credits_path = os.path.join(OUT_DIR, "credits.json")
-    credits = {}
-    if os.path.exists(credits_path):
-        with open(credits_path, encoding="utf-8") as f:
-            credits = _json.load(f)  # keep entries already fetched (e.g. from pasted images)
-    for key, meta in CHOSEN.items():
-        if key in credits and os.path.exists(os.path.join(OUT_DIR, key + ".jpg")):
-            print("skipping", key, "(already present)")
-            continue
-        raw_path = os.path.join(tmp_dir, key + ".jpg")
-        out_path = os.path.join(OUT_DIR, key + ".jpg")
-        print("downloading", key, "...")
-        download(meta["url"], raw_path)
-        process(raw_path, out_path)
-        credits[key] = {
-            "title": meta["title"], "source_url": meta["page_url"],
-            "license": meta["license"], "artist": meta["artist"], "date": meta["date"],
-            "note": "Monochrome, dimmed, cropped derivative for in-game background use. "
-                    "Identity and content unaltered.",
-        }
-        print("  ->", out_path, os.path.getsize(out_path), "bytes")
-    with open(os.path.join(OUT_DIR, "credits.json"), "w", encoding="utf-8") as f:
-        json.dump(credits, f, ensure_ascii=False, indent=2)
-    print("done")
+    main(sys.argv[1:])
