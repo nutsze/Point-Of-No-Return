@@ -16,16 +16,18 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install build tools
-        run: pip install pyinstaller
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
 
       - name: Run tests
         run: python -m unittest discover -s tests -v
 
       - name: Build EXE
         run: >
-          pyinstaller --onefile --console --name PointOfNoReturn
-          --distpath dist main.py
+          pyinstaller --onefile --windowed --name PointOfNoReturn
+          --collect-all pygame --distpath dist main.py
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -41,15 +43,19 @@ jobs:
           prerelease: true
           generate_release_notes: true
           body: |
-            Альфа-версия 0.1. Терминальная визуальная новелла, 2020-2030.
+            Альфа-версия 0.1. Визуальная новелла, 2020-2030.
 
             ## Запуск
             Скачай `PointOfNoReturn.exe` и запусти — Python не нужен,
-            всё собрано в один файл.
+            всё собрано в один файл. Окно поддерживает 2K/4K и
+            изменение размера; `F11` — полноэкранный режим, `Esc` — выход
+            из него.
 
             ## Из исходников
             ```
-            python3 main.py
+            pip install -r requirements.txt
+            python3 main.py          # графическое окно
+            python3 main.py --text   # терминальная версия, без зависимостей
             ```
 
             Подробности, список реальных фигур в игре и правила
