@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Dict
 
-from .story import CITIES, PROFESSIONS, START_NODE
+from .story import CITIES, PROF_WORLD, PROFESSIONS, START_NODE
 
 DEFAULT_DATA = {
     "voice": 0,        # how much the hero speaks and acts
@@ -21,6 +21,9 @@ DEFAULT_DATA = {
     "saved_dima": None,
     "jobless": False,
     "detentions": 0,
+    "mom_argued": False,  # stood up to the mother about the news
+    "ashamed": False,     # looked away when Marina was detained
+    "talked": False,      # told the security services what they asked
 }
 
 _GENDER = re.compile(r"\[\[([^|\]]*)\|([^\]]*)\]\]")
@@ -56,9 +59,30 @@ class State:
         gen, pre = CITIES[self.city]
         return {"nom": self.city, "gen": gen, "pre": pre}[case]
 
-    def format(self, text: str) -> str:
+    def pick(self, value):
+        """Resolve a profession-keyed dict or a callable into a concrete value."""
+        if callable(value):
+            return value(self)
+        if isinstance(value, dict):
+            return value.get(self.profession, value.get("default"))
+        return value
+
+    def format(self, text) -> str:
+        text = self.pick(text) or ""
         text = _GENDER.sub(lambda m: m.group(2 if self.gender == "f" else 1), text)
+        world = PROF_WORLD.get(self.profession, PROF_WORLD["engineer"])
+        boss = world["boss"]
         return (text
+                .replace("{mate}", world["mate"])
+                .replace("{Boss}", boss[:1].upper() + boss[1:])
+                .replace("{boss}", boss)
+                .replace("{at_work}", world["at_work"])
+                .replace("{to_work}", world["to_work"])
+                .replace("{life}", world.get("life", "работает " + self.prof("ins")))
+                .replace("{routine}", world.get("routine", "работа, кредит"))
+                .replace("{work_chat}", world.get("work_chat", "рабочий чат"))
+                .replace("{abroad_job}", world.get("abroad_job", "работа на удалёнке за полцены"))
+                .replace("{workplace}", world.get("workplace", "место работы"))
                 .replace("{name}", self.name or "Ты")
                 .replace("{prof_ins}", self.prof("ins"))
                 .replace("{prof}", self.prof("nom"))

@@ -13,11 +13,12 @@ def targets(choice, seeds):
 def seed_states():
     """States covering every flag combination that data-dependent branches read."""
     out = []
-    for saved, risk, left, arrested, trust, org in itertools.product(
-            (True, False), (0, 10), (False, True), (False, True),
+    for saved, risk, voice, left, arrested, trust, org in itertools.product(
+            (True, False), (0, 10), (0, 10), (False, True), (False, True),
             ("marina", "oleg"), (None, "fbk")):
         s = State()
-        s.data.update(saved_dima=saved, risk=risk, left=left, arrested=arrested, trust=trust, org=org)
+        s.data.update(saved_dima=saved, risk=risk, voice=voice, left=left, arrested=arrested,
+                      trust=trust, org=org)
         out.append(s)
     return out
 
@@ -57,9 +58,31 @@ class TestGraph(unittest.TestCase):
             s = State(name="Тест", gender=gender, profession=prof, city=city)
             for nid, node in NODES.items():
                 texts = [node["text"], node["place"]] + [c[0] for c in node["choices"]]
+                if node.get("quote"):
+                    texts.append(node["quote"]["text"])
                 for t in texts:
                     out = s.format(t)
                     self.assertNotRegex(out, r"\{|\}|\[\[|\]\]", f"{nid}: {out[:80]}")
+
+
+class TestProfessions(unittest.TestCase):
+    def all_text(self, s):
+        for node in NODES.values():
+            yield node["text"]
+            yield node["place"]
+            for c in node["choices"]:
+                yield c[0]
+        for e in ENDINGS.values():
+            yield e["note"]
+
+    def test_students_study_rather_than_work(self):
+        import re
+        for gender in "mf":
+            s = State(name="Тест", gender=gender, profession="student", city="Томск")
+            for t in self.all_text(s):
+                out = s.format(t)
+                self.assertNotRegex(out, re.compile(r"уволь|по собственному|работает студент|рабочий чат|"
+                                                    r"место работы|работа, кредит", re.I), out[:90])
 
 
 class TestPlaythrough(unittest.TestCase):
