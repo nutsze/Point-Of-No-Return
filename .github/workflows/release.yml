@@ -48,8 +48,3 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist/TenWinters.exe
-          body: |
-            **Ten Winters** — визуальная новелла о десяти годах российской истории, 2020–2030.
-
-            Скачай `TenWinters.exe` и запусти. Python не нужен.
-            F11 — полный экран, M — звук, Esc — пауза.
