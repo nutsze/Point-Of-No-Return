@@ -143,6 +143,14 @@
     "date": "Taken on 1",
     "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered."
   },
+  "rybakov": {
+    "title": "Николай Рыбаков в зале Верховного суда, 10 августа 2026",
+    "source_url": "https://www.yabloko.ru/",
+    "license": "CC BY 4.0",
+    "artist": "Партия «Яблоко» (yabloko.ru)",
+    "date": "2026-08-10",
+    "note": "Grayscale, contrast-adjusted and resized derivative; darkened at runtime for use as a background. Content and identity unaltered. Provided by the project author as published by Yabloko."
+  },
   "wagner_rostov": {
     "title": "Танки в Ростове.jpg",
     "source_url": "https://commons.wikimedia.org/wiki/File:%D0%A2%D0%B0%D0%BD%D0%BA%D0%B8_%D0%B2_%D0%A0%D0%BE%D1%81%D1%82%D0%BE%D0%B2%D0%B5.jpg",
