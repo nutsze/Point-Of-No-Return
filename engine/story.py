@@ -1286,7 +1286,7 @@ NODES = {
 ),
 
 "c11_yabloko": dict(
-    chapter=11, date="Июль — август 2026", place="{city}", music="tension", photo="yavlinsky",
+    chapter=11, date="Июль — август 2026", place="{city}", music="tension", photo=["yabloko_crowd", "yavlinsky"],
     text=lambda s: (
         "29 июля ЦИК регистрирует «Яблоко» на выборы в Госдуму — единственную партию в "
         "бюллетене, которая открыто говорит «остановить войну». Программа — сорок три "
@@ -1314,7 +1314,7 @@ NODES = {
 ),
 
 "c11_court": dict(
-    chapter=11, date="10 августа 2026", place="Москва, Верховный суд", music="grief", photo="yavlinsky",
+    chapter=11, date="10 августа 2026", place="Москва, Верховный суд", music="grief", photo=["yabloko_youth", "yavlinsky"],
     text=lambda s: (
         "Девять часов слушаний. "
         + ("Ты стоишь у здания суда в толпе сторонников — в основном молодых. Белые флаги "
@@ -1339,7 +1339,7 @@ NODES = {
 ),
 
 "p_court": dict(
-    chapter=11, date="Август 2026", place="{city}", music="tension", pressure=True,
+    chapter=11, date="Август 2026", place="{city}", music="tension", pressure=True, photo="yabloko_crowd",
     text=(
         "Через неделю звонок: «Вы попали на видео у здания Верховного суда. Приходите "
         "дать объяснения. Пока — как свидетель». На следующий день {boss} сообщает, что "

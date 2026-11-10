@@ -142,7 +142,9 @@ class Photos:
         meta = self.credits.get(key)
         if not meta:
             return None
-        return f"Фото: {meta['artist']} · Wikimedia Commons · {meta['license']}"
+        where = "Wikimedia Commons" if "wikimedia.org" in meta.get("source_url", "") else None
+        parts = [f"Фото: {meta['artist']}", where, meta["license"]]
+        return " · ".join(p for p in parts if p)
 
 
 class Audio:
