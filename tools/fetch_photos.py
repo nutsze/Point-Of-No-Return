@@ -68,7 +68,6 @@ SUBJECTS = {
     "penal_colony": "penal colony Russia fence",
     "military_office": "military commissariat Russia",
     "chistye_prudy": "Chistye Prudy Moscow",
-    "kakhovka": "Kakhovka dam destruction flood 2023",
     "wagner_rostov": "Wagner Group Rostov-on-Don June 2023",
     "ovsyannikova": "Marina Ovsyannikova",
     "gorinov": "Alexei Gorinov",
