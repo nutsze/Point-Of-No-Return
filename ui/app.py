@@ -16,7 +16,7 @@ import pygame
 
 from engine import state as state_mod
 from engine.story import (CHAPTER_PHOTOS, CHAPTERS, CITIES, COUNTRY_CARD, DEDICATION, ENDINGS,
-                          FALLBACK_PHOTOS, NODES, ORGS, PEOPLE, PROFESSIONS, START_NODE,
+                          FALLBACK_PHOTOS, NODES, ORGS, PEOPLE, PROFESSIONS, SPEECH, START_NODE,
                           compute_ending, epilogue)
 
 
@@ -29,6 +29,7 @@ ROOT = resource_root()
 FONTS = os.path.join(ROOT, "assets", "fonts")
 PHOTOS = os.path.join(ROOT, "assets", "photos")
 AUDIO = os.path.join(ROOT, "assets", "audio")
+SPEECH_DIR = os.path.join(ROOT, "assets", "speech")
 
 # palette
 INK = (10, 11, 13)
@@ -155,9 +156,13 @@ class Audio:
         self.muted = False
         self.current: str | None = None
         self.click_snd = None
+        self.speech_ch = None
+        self.speaking = False
         try:
             pygame.mixer.init(frequency=32000)
             self.ok = True
+            pygame.mixer.set_num_channels(8)
+            self.speech_ch = pygame.mixer.Channel(7)
             path = os.path.join(AUDIO, "click.wav")
             if os.path.exists(path):
                 self.click_snd = pygame.mixer.Sound(path)
@@ -180,6 +185,29 @@ class Audio:
         except pygame.error:
             pass
 
+    def play_speech(self, path: str) -> bool:
+        """Play a real recording, ducking the music underneath it."""
+        if not self.ok or not os.path.exists(path):
+            return False
+        try:
+            snd = pygame.mixer.Sound(path)
+        except pygame.error:
+            return False
+        self.speech_ch.play(snd)
+        self.speech_ch.set_volume(0 if self.muted else 1.0)
+        pygame.mixer.music.set_volume(0 if self.muted else 0.18)
+        self.speaking = True
+        return True
+
+    def stop_speech(self):
+        if self.ok and self.speech_ch:
+            self.speech_ch.fadeout(400)
+
+    def tick(self):
+        if self.speaking and self.ok and not self.speech_ch.get_busy():
+            self.speaking = False
+            pygame.mixer.music.set_volume(0 if self.muted else 0.7)
+
     def click(self):
         if self.ok and self.click_snd and not self.muted:
             self.click_snd.play()
@@ -187,7 +215,9 @@ class Audio:
     def toggle_mute(self):
         self.muted = not self.muted
         if self.ok:
-            pygame.mixer.music.set_volume(0 if self.muted else 0.7)
+            pygame.mixer.music.set_volume(0 if self.muted else (0.18 if self.speaking else 0.7))
+            if self.speech_ch:
+                self.speech_ch.set_volume(0 if self.muted else 1.0)
 
 
 # ============================================================ effects ======
@@ -361,6 +391,7 @@ class App:
 
     def update(self, dt: float):
         self.t += dt
+        self.audio.tick()
         if self.paused:
             return
         if self.pending is not None:
@@ -395,6 +426,8 @@ class App:
             self.text_cache_key = None
             node = NODES[self.state.node]
             self.audio.play(node.get("music", "ambient"))
+            sp = SPEECH.get(self.state.node)
+            self.speech_on = bool(sp) and self.audio.play_speech(os.path.join(SPEECH_DIR, sp["file"] + ".ogg"))
 
     # ----------------------------------------------------------- input --
 
@@ -529,6 +562,8 @@ class App:
             self.set_mode("story")
 
     def choose(self, nxt, fx):
+        self.audio.stop_speech()
+
         def go():
             if fx:
                 fx(self.state)
@@ -816,6 +851,21 @@ class App:
             r = self.text("mono", 18, "ДАВЛЕНИЕ", RED, (w - m, self.px(58)), anchor="topright",
                           alpha=int(140 + 115 * pulse))
             pygame.draw.circle(self.screen, RED, (r.left - self.px(16), r.centery), self.px(6))
+
+        sp = SPEECH.get(self.state.node)
+        if sp and getattr(self, "speech_on", False):
+            playing = self.audio.speaking
+            y0 = self.px(100) if node.get("pressure") else self.px(58)
+            col = RED if playing else MUTED
+            tri_x = w - m - self.px(560)
+            pygame.draw.polygon(self.screen, col, [(tri_x, y0 + self.px(2)), (tri_x, y0 + self.px(18)),
+                                                   (tri_x + self.px(14), y0 + self.px(10))])
+            self.text("mono", 17, "ЗАПИСЬ" if playing else "ЗАПИСЬ ЗАКОНЧИЛАСЬ", col, (tri_x + self.px(24), y0))
+            ly = y0 + self.px(28)
+            for line in wrap(self.fonts.get("serif_i", self.px(20)), sp["label"], self.px(560)):
+                self.text("serif_i", 20, line, PAPER, (tri_x, ly))
+                ly += self.px(26)
+            self.text("mono", 14, sp["credit"], MUTED, (tri_x, ly + self.px(2)))
 
         # text panel
         panel = self.panel_rect()

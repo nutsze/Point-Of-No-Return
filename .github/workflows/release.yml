@@ -34,6 +34,7 @@ jobs:
           --add-data "assets/fonts;assets/fonts"
           --add-data "assets/photos;assets/photos"
           --add-data "assets/audio;assets/audio"
+          --add-data "assets/speech;assets/speech"
           --distpath dist main.py
 
       - name: Upload build artifact

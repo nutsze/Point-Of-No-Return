@@ -1439,6 +1439,27 @@ NODES = {
 
 }
 
+# Real recordings played in key scenes: assets/speech/<file>.ogg, cut from freely
+# licensed Wikimedia Commons videos with tools/extract_speech.py. A scene simply
+# stays silent when its file is missing.
+SPEECH = {
+    "c10_funeral": dict(
+        file="navalny_funeral_chant",
+        label="Люди скандируют имя Алексея Навального у Борисовского кладбища, 1 марта 2024",
+        credit="Видео: Прикли · Wikimedia Commons · CC BY 4.0",
+        source_url="https://commons.wikimedia.org/wiki/File:Navalny_funeral_chant.webm"),
+    "c10_noon": dict(
+        file="berlin_noon",
+        label="Очередь «Полдень против Путина» у посольства России в Берлине, 17 марта 2024",
+        credit="Видео: A.Savin · Wikimedia Commons · Free Art License",
+        source_url="https://commons.wikimedia.org/wiki/File:Berlin_Noon_Against_Putin_asv2024-03-17_Video10.webm"),
+    "c11_exchange": dict(
+        file="yashin_mauerpark",
+        label="Илья Яшин выступает в Мауэрпарке в Берлине после обмена, август 2024",
+        credit="Видео: A.Savin · Wikimedia Commons · Free Art License",
+        source_url="https://commons.wikimedia.org/wiki/File:Ilya_Yashin%27s_Mauerpark_Meeting_asv2024-08_video.webm"),
+}
+
 START_NODE = "c1_khab"
 
 # ------------------------------------------------------------------ endings --
