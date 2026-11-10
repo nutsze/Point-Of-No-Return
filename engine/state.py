@@ -29,7 +29,7 @@ DEFAULT_DATA = {
     "letter": None, "letters": False, "promised_mom": False, "dima_abroad": False,
     "grief": None, "helped_flood": False, "price_tag": False, "marina_friend": False,
     "kept_sign": False, "collector": False, "flowers": False, "helped_teens": False,
-    "campaigned": False, "role": None,
+    "campaigned": False, "role": None, "court_support": False,
 }
 
 _GENDER = re.compile(r"\[\[([^|\]]*)\|([^\]]*)\]\]")

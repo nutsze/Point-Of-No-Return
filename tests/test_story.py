@@ -20,6 +20,9 @@ def seed_states():
         s.data.update(saved_dima=saved, risk=risk, voice=voice, left=left, arrested=arrested,
                       trust=trust, org=org)
         out.append(s)
+    court = State()
+    court.data.update(court_support=True)
+    out.append(court)
     return out
 
 
